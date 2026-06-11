@@ -1,0 +1,611 @@
+export const idlFactory = ({ IDL }) => {
+  const UserId = IDL.Principal;
+  const CommentView = IDL.Record({
+    'id' : IDL.Text,
+    'isDeleted' : IDL.Bool,
+    'parentCommentId' : IDL.Opt(IDL.Text),
+    'authorId' : UserId,
+    'createdAt' : IDL.Int,
+    'text' : IDL.Text,
+    'updatedAt' : IDL.Int,
+    'isEdited' : IDL.Bool,
+    'videoId' : IDL.Text,
+  });
+  const Timestamp = IDL.Int;
+  const Platform = IDL.Variant({
+    'tiktok' : IDL.Null,
+    'vimeo' : IDL.Null,
+    'kwai' : IDL.Null,
+    'dailymotion' : IDL.Null,
+    'archive' : IDL.Null,
+    'youtube' : IDL.Null,
+  });
+  const VideoId = IDL.Text;
+  const WatchHistoryEntry = IDL.Record({
+    'title' : IDL.Text,
+    'thumbnailUrl' : IDL.Text,
+    'watchedAt' : Timestamp,
+    'platform' : Platform,
+    'videoId' : VideoId,
+  });
+  const ContentStats = IDL.Record({
+    'totalVideoPosts' : IDL.Nat,
+    'deletedComments' : IDL.Nat,
+    'activeVideoPosts' : IDL.Nat,
+    'totalReactions' : IDL.Nat,
+    'deletedVideoPosts' : IDL.Nat,
+    'flaggedVideoPosts' : IDL.Nat,
+    'totalComments' : IDL.Nat,
+  });
+  const PageResult_1 = IDL.Record({
+    'total' : IDL.Nat,
+    'offset' : IDL.Nat,
+    'limit' : IDL.Nat,
+    'items' : IDL.Vec(CommentView),
+  });
+  const VideoPostStatus = IDL.Variant({
+    'deleted' : IDL.Null,
+    'active' : IDL.Null,
+    'flagged' : IDL.Null,
+  });
+  const VideoPostView = IDL.Record({
+    'id' : IDL.Text,
+    'dislikeCount' : IDL.Nat,
+    'status' : VideoPostStatus,
+    'title' : IDL.Text,
+    'likeCount' : IDL.Nat,
+    'thumbnailUrl' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'tags' : IDL.Vec(IDL.Text),
+    'description' : IDL.Text,
+    'updatedAt' : IDL.Int,
+    'viewCount' : IDL.Nat,
+    'category' : IDL.Text,
+    'videoUrl' : IDL.Text,
+    'uploaderId' : UserId,
+  });
+  const PageResult = IDL.Record({
+    'total' : IDL.Nat,
+    'offset' : IDL.Nat,
+    'limit' : IDL.Nat,
+    'items' : IDL.Vec(VideoPostView),
+  });
+  const UserRole__1 = IDL.Variant({
+    'admin' : IDL.Null,
+    'user' : IDL.Null,
+    'guest' : IDL.Null,
+  });
+  const SubscriptionTier = IDL.Variant({
+    'pro' : IDL.Null,
+    'free' : IDL.Null,
+    'plus' : IDL.Null,
+  });
+  const PlanType = IDL.Variant({ 'annual' : IDL.Null, 'monthly' : IDL.Null });
+  const VideoPostInput = IDL.Record({
+    'title' : IDL.Text,
+    'thumbnailUrl' : IDL.Text,
+    'tags' : IDL.Vec(IDL.Text),
+    'description' : IDL.Text,
+    'category' : IDL.Text,
+    'videoUrl' : IDL.Text,
+  });
+  const AdminStats = IDL.Record({
+    'bannedUsers' : IDL.Nat,
+    'trendingCount' : IDL.Nat,
+    'totalWatchEvents' : IDL.Nat,
+    'totalUsers' : IDL.Nat,
+  });
+  const UserRole = IDL.Variant({ 'admin' : IDL.Null, 'user' : IDL.Null });
+  const Language = IDL.Variant({ 'ar' : IDL.Null, 'en' : IDL.Null });
+  const UserPublic = IDL.Record({
+    'id' : UserId,
+    'username' : IDL.Text,
+    'displayName' : IDL.Text,
+    'createdAt' : Timestamp,
+    'role' : UserRole,
+    'email' : IDL.Text,
+    'language' : Language,
+    'darkMode' : IDL.Bool,
+    'avatarUrl' : IDL.Text,
+    'isBanned' : IDL.Bool,
+    'facebookUrl' : IDL.Opt(IDL.Text),
+    'tiktokUrl' : IDL.Opt(IDL.Text),
+  });
+  const TierDownloadCount = IDL.Record({
+    'count' : IDL.Nat,
+    'tier' : IDL.Text,
+  });
+  const DailyDownloadTotal = IDL.Record({
+    'date' : IDL.Text,
+    'count' : IDL.Nat,
+  });
+  const UserDownloadCount = IDL.Record({
+    'userId' : IDL.Text,
+    'count' : IDL.Nat,
+  });
+  const DownloadAnalytics = IDL.Record({
+    'byTier' : IDL.Vec(TierDownloadCount),
+    'dailyTotals' : IDL.Vec(DailyDownloadTotal),
+    'totalDownloads' : IDL.Nat,
+    'topUsers' : IDL.Vec(UserDownloadCount),
+  });
+  const ActivityItem = IDL.Record({
+    'activityType' : IDL.Variant({ 'watched' : IDL.Null, 'posted' : IDL.Null }),
+    'userId' : UserId,
+    'timestamp' : IDL.Int,
+    'videoId' : IDL.Text,
+  });
+  const NotificationKind = IDL.Variant({
+    'video_commented' : IDL.Null,
+    'new_video_from_followed' : IDL.Null,
+    'new_follower' : IDL.Null,
+    'video_liked' : IDL.Null,
+  });
+  const NotificationView = IDL.Record({
+    'id' : IDL.Text,
+    'userId' : UserId,
+    'kind' : NotificationKind,
+    'isRead' : IDL.Bool,
+    'actorId' : UserId,
+    'message' : IDL.Text,
+    'timestamp' : Timestamp,
+    'videoId' : IDL.Opt(IDL.Text),
+  });
+  const NotificationPage = IDL.Record({
+    'total' : IDL.Nat,
+    'offset' : IDL.Nat,
+    'limit' : IDL.Nat,
+    'unreadCount' : IDL.Nat,
+    'items' : IDL.Vec(NotificationView),
+  });
+  const SubscriptionStatus = IDL.Variant({
+    'incomplete' : IDL.Null,
+    'active' : IDL.Null,
+    'canceled' : IDL.Null,
+    'pastDue' : IDL.Null,
+  });
+  const SubscriptionView = IDL.Record({
+    'id' : IDL.Text,
+    'status' : SubscriptionStatus,
+    'stripeSubscriptionId' : IDL.Text,
+    'userId' : UserId,
+    'tier' : SubscriptionTier,
+    'currentPeriodEnd' : Timestamp,
+    'stripeCustomerId' : IDL.Text,
+    'planType' : PlanType,
+  });
+  const RecommendedVideo = IDL.Record({
+    'platform' : Platform,
+    'score' : IDL.Float64,
+    'reason' : IDL.Text,
+    'videoId' : IDL.Text,
+  });
+  const VideoMetadata = IDL.Record({
+    'title' : IDL.Text,
+    'duration' : IDL.Text,
+    'channelTitle' : IDL.Text,
+    'thumbnailUrl' : IDL.Text,
+    'publishedAt' : IDL.Text,
+    'platform' : Platform,
+    'viewCount' : IDL.Text,
+    'videoId' : VideoId,
+  });
+  const TrendingEntry = IDL.Record({
+    'video' : VideoMetadata,
+    'watchCount' : IDL.Nat,
+  });
+  const UserSettings = IDL.Record({
+    'language' : Language,
+    'darkMode' : IDL.Bool,
+  });
+  const ReactionKind = IDL.Variant({ 'like' : IDL.Null, 'dislike' : IDL.Null });
+  const VideoStats = IDL.Record({
+    'dislikeCount' : IDL.Nat,
+    'likeCount' : IDL.Nat,
+    'commentCount' : IDL.Nat,
+  });
+  const AuthResult = IDL.Variant({ 'ok' : UserId, 'err' : IDL.Text });
+  const RegisterInput = IDL.Record({
+    'username' : IDL.Text,
+    'displayName' : IDL.Text,
+    'email' : IDL.Text,
+    'avatarUrl' : IDL.Text,
+  });
+  const http_header = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
+  const http_request_result = IDL.Record({
+    'status' : IDL.Nat,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(http_header),
+  });
+  const TransformationInput = IDL.Record({
+    'context' : IDL.Vec(IDL.Nat8),
+    'response' : http_request_result,
+  });
+  const TransformationOutput = IDL.Record({
+    'status' : IDL.Nat,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(http_header),
+  });
+  const UpdateProfileInput = IDL.Record({
+    'displayName' : IDL.Text,
+    'email' : IDL.Text,
+    'avatarUrl' : IDL.Text,
+    'facebookUrl' : IDL.Opt(IDL.Text),
+    'tiktokUrl' : IDL.Opt(IDL.Text),
+  });
+  return IDL.Service({
+    '_initializeAccessControl' : IDL.Func([], [], []),
+    'addComment' : IDL.Func(
+        [IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
+        [CommentView],
+        [],
+      ),
+    'addVideoToPlaylist' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'addWatchHistory' : IDL.Func([WatchHistoryEntry], [], []),
+    'adminDeleteComment' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'adminGetContentStats' : IDL.Func([], [ContentStats], ['query']),
+    'adminListAllComments' : IDL.Func([IDL.Nat, IDL.Nat], [PageResult_1], []),
+    'adminListAllVideoPosts' : IDL.Func([IDL.Nat, IDL.Nat], [PageResult], []),
+    'adminUpdateVideoPostStatus' : IDL.Func(
+        [IDL.Text, VideoPostStatus],
+        [IDL.Opt(VideoPostView)],
+        [],
+      ),
+    'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole__1], [], []),
+    'banUser' : IDL.Func([UserId], [], []),
+    'canUserAccessVideo' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text })],
+        ['query'],
+      ),
+    'canUserDownload' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+    'cancelSubscription' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'clearWatchHistory' : IDL.Func([], [], []),
+    'createCheckoutSession' : IDL.Func(
+        [SubscriptionTier, PlanType, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
+    'createCustomerPortalSession' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
+    'createPlaylist' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Bool, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
+    'createVideoPost' : IDL.Func([VideoPostInput], [VideoPostView], []),
+    'deleteComment' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'deleteCommentByAdmin' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'deleteMyAccount' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'deletePlaylist' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'deleteVideoPost' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'deleteVideoPostByAdmin' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(VideoPostView)],
+        [],
+      ),
+    'demoteFromAdmin' : IDL.Func([UserId], [], []),
+    'editComment' : IDL.Func([IDL.Text, IDL.Text], [IDL.Opt(CommentView)], []),
+    'flagVideoPost' : IDL.Func([IDL.Text], [IDL.Opt(VideoPostView)], []),
+    'followUser' : IDL.Func([IDL.Principal], [IDL.Bool], []),
+    'getAdminStats' : IDL.Func([], [AdminStats], ['query']),
+    'getArchiveEnabled' : IDL.Func([], [IDL.Bool], ['query']),
+    'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserPublic)], ['query']),
+    'getCallerUserRole' : IDL.Func([], [UserRole__1], ['query']),
+    'getContentGatingSettings' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'defaultFreeVideosPerDay' : IDL.Nat,
+            'enabled' : IDL.Bool,
+          }),
+        ],
+        ['query'],
+      ),
+    'getDailyDownloadLimit' : IDL.Func([], [IDL.Int], ['query']),
+    'getDailymotionApiKey' : IDL.Func([], [IDL.Text], ['query']),
+    'getDownloadAnalytics' : IDL.Func([], [DownloadAnalytics], ['query']),
+    'getDownloadCount' : IDL.Func([IDL.Text, IDL.Text], [IDL.Int], ['query']),
+    'getDownloadLimit' : IDL.Func([], [IDL.Int], ['query']),
+    'getFlaggedContent' : IDL.Func([], [PageResult], ['query']),
+    'getFollowActivity' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Vec(ActivityItem)],
+        ['query'],
+      ),
+    'getFollowers' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(IDL.Principal)],
+        ['query'],
+      ),
+    'getFollowing' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Vec(IDL.Principal)],
+        ['query'],
+      ),
+    'getMyNotifications' : IDL.Func(
+        [IDL.Nat, IDL.Nat],
+        [NotificationPage],
+        ['query'],
+      ),
+    'getMySubscription' : IDL.Func([], [IDL.Opt(SubscriptionView)], ['query']),
+    'getPlaylist' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Variant({
+            'ok' : IDL.Record({
+              'id' : IDL.Text,
+              'userId' : IDL.Text,
+              'name' : IDL.Text,
+              'createdAt' : IDL.Int,
+              'description' : IDL.Text,
+              'updatedAt' : IDL.Int,
+              'isPublic' : IDL.Bool,
+              'videoIds' : IDL.Vec(IDL.Text),
+            }),
+            'err' : IDL.Text,
+          }),
+        ],
+        ['query'],
+      ),
+    'getPremiumVideoIds' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+    'getProfileByUsername' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(UserPublic)],
+        ['query'],
+      ),
+    'getProviderEnabled' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+    'getRecommendations' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Vec(RecommendedVideo)],
+        ['query'],
+      ),
+    'getSaltForUser' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Text)], ['query']),
+    'getStripePublishableKey' : IDL.Func([], [IDL.Text], ['query']),
+    'getTikTokApiKey' : IDL.Func([], [IDL.Text], ['query']),
+    'getTrending' : IDL.Func([], [IDL.Vec(TrendingEntry)], ['query']),
+    'getUnreadCount' : IDL.Func([], [IDL.Nat], ['query']),
+    'getUser' : IDL.Func([UserId], [IDL.Opt(UserPublic)], ['query']),
+    'getUserPlaylists' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Vec(
+            IDL.Record({
+              'id' : IDL.Text,
+              'userId' : IDL.Text,
+              'name' : IDL.Text,
+              'createdAt' : IDL.Int,
+              'description' : IDL.Text,
+              'updatedAt' : IDL.Int,
+              'isPublic' : IDL.Bool,
+              'videoIds' : IDL.Vec(IDL.Text),
+            })
+          ),
+        ],
+        ['query'],
+      ),
+    'getUserSettings' : IDL.Func([], [UserSettings], ['query']),
+    'getVideoComments' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(CommentView)],
+        ['query'],
+      ),
+    'getVideoPost' : IDL.Func([IDL.Text], [IDL.Opt(VideoPostView)], ['query']),
+    'getVideoReaction' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(ReactionKind)],
+        ['query'],
+      ),
+    'getVideoStats' : IDL.Func([IDL.Text], [IDL.Opt(VideoStats)], ['query']),
+    'getVimeoApiKey' : IDL.Func([], [IDL.Text], ['query']),
+    'getWatchHistory' : IDL.Func([], [IDL.Vec(WatchHistoryEntry)], ['query']),
+    'getWebhookEndpointInfo' : IDL.Func(
+        [],
+        [IDL.Record({ 'note' : IDL.Text, 'path' : IDL.Text })],
+        ['query'],
+      ),
+    'getYouTubeApiKey' : IDL.Func([], [IDL.Text], ['query']),
+    'handleStripeWebhook' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'isAdminUsername' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+    'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'isFollowing' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
+    'linkGoogleAccount' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'listAllUsers' : IDL.Func([], [IDL.Vec(UserPublic)], ['query']),
+    'listUserVideoPosts' : IDL.Func(
+        [IDL.Principal, IDL.Nat, IDL.Nat],
+        [PageResult],
+        ['query'],
+      ),
+    'listVideoPosts' : IDL.Func([IDL.Nat, IDL.Nat], [PageResult], ['query']),
+    'loginWithCredentials' : IDL.Func([IDL.Text, IDL.Text], [AuthResult], []),
+    'markAllRead' : IDL.Func([], [], []),
+    'markNotificationRead' : IDL.Func([IDL.Text], [], []),
+    'promoteToAdmin' : IDL.Func([UserId], [], []),
+    'reactToVideo' : IDL.Func([IDL.Text, ReactionKind], [IDL.Bool], []),
+    'recordDownload' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Int, 'err' : IDL.Text })],
+        [],
+      ),
+    'registerUser' : IDL.Func([RegisterInput], [UserPublic], []),
+    'registerWithCredentials' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [AuthResult],
+        [],
+      ),
+    'removeVideoFromPlaylist' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'reseedAdmin' : IDL.Func([], [IDL.Bool], []),
+    'resetDownloadCounts' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'saveCallerUserProfile' : IDL.Func([RegisterInput], [], []),
+    'searchYouTube' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Text], []),
+    'setArchiveEnabled' : IDL.Func(
+        [IDL.Bool, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setContentGatingSettings' : IDL.Func(
+        [IDL.Bool, IDL.Nat],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setDailyDownloadLimitAuth' : IDL.Func(
+        [IDL.Int, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setDailyDownloadLimitByToken' : IDL.Func(
+        [IDL.Int, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setDailymotionApiKey' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setDailymotionApiKeyByToken' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setDownloadLimit' : IDL.Func(
+        [IDL.Int, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setProviderEnabled' : IDL.Func(
+        [IDL.Text, IDL.Bool],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setStripeKeys' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
+    'setStripeKeysAuth' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setTikTokApiKeyAuth' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setTikTokApiKeyWithToken' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setVideoPremium' : IDL.Func(
+        [IDL.Text, IDL.Bool, SubscriptionTier],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setVimeoApiKey' : IDL.Func([IDL.Text], [], []),
+    'setVimeoApiKeyAuth' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setVimeoApiKeyByToken' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setVimeoApiKeyWithToken' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setYouTubeApiKey' : IDL.Func([IDL.Text], [], []),
+    'setYouTubeApiKeyAuth' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setYouTubeApiKeyByToken' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'setYouTubeApiKeyWithToken' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'transform' : IDL.Func(
+        [TransformationInput],
+        [TransformationOutput],
+        ['query'],
+      ),
+    'transformSubscription' : IDL.Func(
+        [TransformationInput],
+        [TransformationOutput],
+        ['query'],
+      ),
+    'unbanUser' : IDL.Func([UserId], [], []),
+    'unfollowUser' : IDL.Func([IDL.Principal], [IDL.Bool], []),
+    'updatePlaylist' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Bool, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'updateProfile' : IDL.Func([UpdateProfileInput], [UserPublic], []),
+    'updateSettings' : IDL.Func([UserSettings], [], []),
+    'updateVideoPost' : IDL.Func(
+        [IDL.Text, VideoPostInput],
+        [IDL.Opt(VideoPostView)],
+        [],
+      ),
+    'validateDailymotionApiKey' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        ['query'],
+      ),
+    'validateVimeoApiKey' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        ['query'],
+      ),
+    'validateYouTubeApiKey' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        ['query'],
+      ),
+    'verifyGoogleOAuth' : IDL.Func([IDL.Text], [AuthResult], []),
+  });
+};
+export const init = ({ IDL }) => { return []; };

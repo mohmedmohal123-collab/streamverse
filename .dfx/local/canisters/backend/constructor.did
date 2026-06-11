@@ -1,0 +1,598 @@
+type http_request_result = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type http_header = 
+ record {
+   name: text;
+   value: text;
+ };
+type WatchHistoryEntry = 
+ record {
+   platform: Platform;
+   thumbnailUrl: text;
+   title: text;
+   videoId: VideoId;
+   watchedAt: Timestamp;
+ };
+type VideoStats = 
+ record {
+   commentCount: nat;
+   dislikeCount: nat;
+   likeCount: nat;
+ };
+type VideoPostView = 
+ record {
+   category: text;
+   createdAt: int;
+   description: text;
+   dislikeCount: nat;
+   id: text;
+   likeCount: nat;
+   status: VideoPostStatus;
+   tags: vec text;
+   thumbnailUrl: text;
+   title: text;
+   updatedAt: int;
+   uploaderId: UserId;
+   videoUrl: text;
+   viewCount: nat;
+ };
+type VideoPostStatus = 
+ variant {
+   active;
+   deleted;
+   flagged;
+ };
+type VideoPostInput = 
+ record {
+   category: text;
+   description: text;
+   tags: vec text;
+   thumbnailUrl: text;
+   title: text;
+   videoUrl: text;
+ };
+type VideoMetadata = 
+ record {
+   channelTitle: text;
+   duration: text;
+   platform: Platform;
+   publishedAt: text;
+   thumbnailUrl: text;
+   title: text;
+   videoId: VideoId;
+   viewCount: text;
+ };
+type VideoId = text;
+type UserSettings = 
+ record {
+   darkMode: bool;
+   language: Language;
+ };
+type UserRole__1 = 
+ variant {
+   admin;
+   guest;
+   user;
+ };
+type UserRole = 
+ variant {
+   admin;
+   user;
+ };
+type UserPublic = 
+ record {
+   avatarUrl: text;
+   createdAt: Timestamp;
+   darkMode: bool;
+   displayName: text;
+   email: text;
+   facebookUrl: opt text;
+   id: UserId;
+   isBanned: bool;
+   language: Language;
+   role: UserRole;
+   tiktokUrl: opt text;
+   username: text;
+ };
+type UserId = principal;
+type UserDownloadCount = 
+ record {
+   count: nat;
+   userId: text;
+ };
+type UpdateProfileInput = 
+ record {
+   avatarUrl: text;
+   displayName: text;
+   email: text;
+   facebookUrl: opt text;
+   tiktokUrl: opt text;
+ };
+type TrendingEntry = 
+ record {
+   video: VideoMetadata;
+   watchCount: nat;
+ };
+type TransformationOutput = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type TransformationInput = 
+ record {
+   context: blob;
+   response: http_request_result;
+ };
+type Timestamp = int;
+type TierDownloadCount = 
+ record {
+   count: nat;
+   tier: text;
+ };
+type SubscriptionView = 
+ record {
+   currentPeriodEnd: Timestamp;
+   id: text;
+   planType: PlanType;
+   status: SubscriptionStatus;
+   stripeCustomerId: text;
+   stripeSubscriptionId: text;
+   tier: SubscriptionTier;
+   userId: UserId;
+ };
+type SubscriptionTier = 
+ variant {
+   free;
+   plus;
+   pro;
+ };
+type SubscriptionStatus = 
+ variant {
+   active;
+   canceled;
+   incomplete;
+   pastDue;
+ };
+type RegisterInput = 
+ record {
+   avatarUrl: text;
+   displayName: text;
+   email: text;
+   username: text;
+ };
+type RecommendedVideo = 
+ record {
+   platform: Platform;
+   reason: text;
+   score: float64;
+   videoId: text;
+ };
+type ReactionKind = 
+ variant {
+   dislike;
+   like;
+ };
+type Platform = 
+ variant {
+   archive;
+   dailymotion;
+   kwai;
+   tiktok;
+   vimeo;
+   youtube;
+ };
+type PlanType = 
+ variant {
+   annual;
+   monthly;
+ };
+type PageResult_1 = 
+ record {
+   items: vec CommentView;
+   limit: nat;
+   offset: nat;
+   total: nat;
+ };
+type PageResult = 
+ record {
+   items: vec VideoPostView;
+   limit: nat;
+   offset: nat;
+   total: nat;
+ };
+type NotificationView = 
+ record {
+   actorId: UserId;
+   id: text;
+   isRead: bool;
+   kind: NotificationKind;
+   message: text;
+   timestamp: Timestamp;
+   userId: UserId;
+   videoId: opt text;
+ };
+type NotificationPage = 
+ record {
+   items: vec NotificationView;
+   limit: nat;
+   offset: nat;
+   total: nat;
+   unreadCount: nat;
+ };
+type NotificationKind = 
+ variant {
+   new_follower;
+   new_video_from_followed;
+   video_commented;
+   video_liked;
+ };
+type Language = 
+ variant {
+   ar;
+   en;
+ };
+type DownloadAnalytics = 
+ record {
+   byTier: vec TierDownloadCount;
+   dailyTotals: vec DailyDownloadTotal;
+   topUsers: vec UserDownloadCount;
+   totalDownloads: nat;
+ };
+type DailyDownloadTotal = 
+ record {
+   count: nat;
+   date: text;
+ };
+type ContentStats = 
+ record {
+   activeVideoPosts: nat;
+   deletedComments: nat;
+   deletedVideoPosts: nat;
+   flaggedVideoPosts: nat;
+   totalComments: nat;
+   totalReactions: nat;
+   totalVideoPosts: nat;
+ };
+type CommentView = 
+ record {
+   authorId: UserId;
+   createdAt: int;
+   id: text;
+   isDeleted: bool;
+   isEdited: bool;
+   parentCommentId: opt text;
+   "text": text;
+   updatedAt: int;
+   videoId: text;
+ };
+type AuthResult = 
+ variant {
+   err: text;
+   ok: UserId;
+ };
+type AdminStats = 
+ record {
+   bannedUsers: nat;
+   totalUsers: nat;
+   totalWatchEvents: nat;
+   trendingCount: nat;
+ };
+type ActivityItem = 
+ record {
+   activityType: variant {
+                   posted;
+                   watched;
+                 };
+   timestamp: int;
+   userId: UserId;
+   videoId: text;
+ };
+service : {
+  _initializeAccessControl: () -> ();
+  addComment: (videoId: text, parentCommentId: opt text, "text": text) ->
+   (CommentView);
+  addVideoToPlaylist: (playlistId: text, videoId: text, userId: text, token:
+   text) -> (variant {
+               err: text;
+               ok;
+             });
+  addWatchHistory: (entry: WatchHistoryEntry) -> ();
+  adminDeleteComment: (commentId: text) -> (bool);
+  adminGetContentStats: () -> (ContentStats) query;
+  adminListAllComments: (offset: nat, limit: nat) -> (PageResult_1);
+  adminListAllVideoPosts: (offset: nat, limit: nat) -> (PageResult);
+  adminUpdateVideoPostStatus: (postId: text, status: VideoPostStatus) ->
+   (opt VideoPostView);
+  assignCallerUserRole: (user: principal, role: UserRole__1) -> ();
+  banUser: (userId: UserId) -> ();
+  canUserAccessVideo: (videoId: text) ->
+   (variant {
+      err: text;
+      ok: bool;
+    }) query;
+  canUserDownload: (userId: text) -> (bool) query;
+  cancelSubscription: () -> (variant {
+                               err: text;
+                               ok;
+                             });
+  clearWatchHistory: () -> ();
+  createCheckoutSession: (tier: SubscriptionTier, planType: PlanType,
+   successUrl: text, returnUrl: text) -> (variant {
+                                            err: text;
+                                            ok: text;
+                                          });
+  createCustomerPortalSession: (returnUrl: text) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
+  createPlaylist: (userId: text, name: text, description: text, isPublic:
+   bool, token: text) -> (variant {
+                            err: text;
+                            ok: text;
+                          });
+  createVideoPost: (input: VideoPostInput) -> (VideoPostView);
+  deleteComment: (commentId: text) -> (bool);
+  deleteCommentByAdmin: (commentId: text) -> (bool);
+  /// Deletes the calling user's account and all associated data. Caller must be authenticated.
+  deleteMyAccount: () -> (variant {
+                            err: text;
+                            ok;
+                          });
+  deletePlaylist: (playlistId: text, userId: text, token: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  deleteVideoPost: (postId: text) -> (bool);
+  deleteVideoPostByAdmin: (postId: text) -> (opt VideoPostView);
+  demoteFromAdmin: (userId: UserId) -> ();
+  editComment: (commentId: text, newText: text) -> (opt CommentView);
+  flagVideoPost: (postId: text) -> (opt VideoPostView);
+  followUser: (targetPrincipal: principal) -> (bool);
+  getAdminStats: () -> (AdminStats) query;
+  getArchiveEnabled: () -> (bool) query;
+  getCallerUserProfile: () -> (opt UserPublic) query;
+  getCallerUserRole: () -> (UserRole__1) query;
+  getContentGatingSettings: () ->
+   (record {
+      defaultFreeVideosPerDay: nat;
+      enabled: bool;
+    }) query;
+  getDailyDownloadLimit: () -> (int) query;
+  getDailymotionApiKey: () -> (text) query;
+  getDownloadAnalytics: () -> (DownloadAnalytics) query;
+  getDownloadCount: (userId: text, date: text) -> (int) query;
+  getDownloadLimit: () -> (int) query;
+  getFlaggedContent: () -> (PageResult) query;
+  getFollowActivity: (limit: nat) -> (vec ActivityItem) query;
+  getFollowers: (userId: principal) -> (vec principal) query;
+  getFollowing: (userId: principal) -> (vec principal) query;
+  getMyNotifications: (offset: nat, limit: nat) -> (NotificationPage) query;
+  getMySubscription: () -> (opt SubscriptionView) query;
+  getPlaylist: (playlistId: text) ->
+   (variant {
+      err: text;
+      ok:
+       record {
+         createdAt: int;
+         description: text;
+         id: text;
+         isPublic: bool;
+         name: text;
+         updatedAt: int;
+         userId: text;
+         videoIds: vec text;
+       };
+    }) query;
+  getPremiumVideoIds: () -> (vec text) query;
+  getProfileByUsername: (username: text) -> (opt UserPublic) query;
+  getProviderEnabled: (provider: text) -> (bool) query;
+  getRecommendations: (limit: nat) -> (vec RecommendedVideo) query;
+  getSaltForUser: (username: text) -> (opt text) query;
+  /// Returns the stored Stripe publishable key (public key, no auth needed).
+  getStripePublishableKey: () -> (text) query;
+  getTikTokApiKey: () -> (text) query;
+  getTrending: () -> (vec TrendingEntry) query;
+  getUnreadCount: () -> (nat) query;
+  getUser: (userId: UserId) -> (opt UserPublic) query;
+  getUserPlaylists: (userId: text) ->
+   (vec
+     record {
+       createdAt: int;
+       description: text;
+       id: text;
+       isPublic: bool;
+       name: text;
+       updatedAt: int;
+       userId: text;
+       videoIds: vec text;
+     }) query;
+  getUserSettings: () -> (UserSettings) query;
+  getVideoComments: (videoId: text) -> (vec CommentView) query;
+  getVideoPost: (postId: text) -> (opt VideoPostView) query;
+  getVideoReaction: (videoId: text) -> (opt ReactionKind) query;
+  getVideoStats: (videoId: text) -> (opt VideoStats) query;
+  getVimeoApiKey: () -> (text) query;
+  getWatchHistory: () -> (vec WatchHistoryEntry) query;
+  getWebhookEndpointInfo: () -> (record {
+                                   note: text;
+                                   path: text;
+                                 }) query;
+  getYouTubeApiKey: () -> (text) query;
+  handleStripeWebhook: (rawBody: text, signature: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  /// Check if the given username belongs to the admin account.
+  /// Used by the frontend to verify admin status without needing II.
+  isAdminUsername: (username: text) -> (bool) query;
+  isCallerAdmin: () -> (bool) query;
+  isFollowing: (targetPrincipal: principal) -> (bool) query;
+  linkGoogleAccount: (googleSub: text, email: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  listAllUsers: () -> (vec UserPublic) query;
+  listUserVideoPosts: (uploader: principal, offset: nat, limit: nat) ->
+   (PageResult) query;
+  listVideoPosts: (offset: nat, limit: nat) -> (PageResult) query;
+  loginWithCredentials: (username: text, passwordHash: text) -> (AuthResult);
+  markAllRead: () -> ();
+  markNotificationRead: (id: text) -> ();
+  promoteToAdmin: (userId: UserId) -> ();
+  reactToVideo: (videoId: text, reaction: ReactionKind) -> (bool);
+  recordDownload: (userId: text, videoId: text, platform: text, token:
+   text) -> (variant {
+               err: text;
+               ok: int;
+             });
+  registerUser: (input: RegisterInput) -> (UserPublic);
+  registerWithCredentials: (username: text, email: text, passwordHash: 
+   text, salt: text) -> (AuthResult);
+  removeVideoFromPlaylist: (playlistId: text, videoId: text, userId: 
+   text, token: text) -> (variant {
+                            err: text;
+                            ok;
+                          });
+  /// Re-seed the admin account. Call this if admin access is lost.
+  /// Returns true if seeding succeeded.
+  reseedAdmin: () -> (bool);
+  resetDownloadCounts: (token: text) -> (variant {
+                                           err: text;
+                                           ok;
+                                         });
+  saveCallerUserProfile: (input: RegisterInput) -> ();
+  searchYouTube: (searchQuery: text, maxResults: nat) -> (text);
+  setArchiveEnabled: (enabled: bool, token: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  setContentGatingSettings: (enabled: bool, defaultFreeVideosPerDay: 
+   nat) -> (variant {
+              err: text;
+              ok;
+            });
+  setDailyDownloadLimitAuth: (limit: int, username: text, passHash: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  setDailyDownloadLimitByToken: (limit: int, token: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  setDailymotionApiKey: (apiKey: text, username: text, passwordHash: 
+   text) -> (variant {
+               err: text;
+               ok;
+             });
+  setDailymotionApiKeyByToken: (apiKey: text, token: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  setDownloadLimit: (limit: int, token: text) -> (variant {
+                                                    err: text;
+                                                    ok;
+                                                  });
+  setProviderEnabled: (provider: text, enabled: bool) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  /// Sets the Stripe publishable key, secret key, and webhook secret.
+  /// No caller-based auth since frontend calls are anonymous.
+  setStripeKeys: (publishableKey: text, secretKey: text, webhookSecret:
+   text) -> ();
+  /// Sets Stripe keys after verifying admin credentials.
+  /// Accepts the username and client-side password hash (same format as loginWithCredentials).
+  setStripeKeysAuth: (publishableKey: text, secretKey: text, webhookSecret:
+   text, username: text, passwordHash: text) -> (variant {
+                                                   err: text;
+                                                   ok;
+                                                 });
+  setTikTokApiKeyAuth: (apiKey: text, username: text, passwordHash: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  setTikTokApiKeyWithToken: (apiKey: text, token: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  setVideoPremium: (videoId: text, isPremium: bool, requiredTier:
+   SubscriptionTier) -> (variant {
+                           err: text;
+                           ok;
+                         });
+  setVimeoApiKey: (apiKey: text) -> ();
+  setVimeoApiKeyAuth: (apiKey: text, username: text, passwordHash: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  setVimeoApiKeyByToken: (apiKey: text, token: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  setVimeoApiKeyWithToken: (apiKey: text, token: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  setYouTubeApiKey: (apiKey: text) -> ();
+  setYouTubeApiKeyAuth: (apiKey: text, username: text, passwordHash: 
+   text) -> (variant {
+               err: text;
+               ok;
+             });
+  setYouTubeApiKeyByToken: (apiKey: text, token: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  setYouTubeApiKeyWithToken: (apiKey: text, token: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  transform: (input: TransformationInput) -> (TransformationOutput) query;
+  transformSubscription: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  unbanUser: (userId: UserId) -> ();
+  unfollowUser: (targetPrincipal: principal) -> (bool);
+  updatePlaylist: (playlistId: text, name: text, description: text, isPublic:
+   bool, userId: text, token: text) -> (variant {
+                                          err: text;
+                                          ok;
+                                        });
+  updateProfile: (input: UpdateProfileInput) -> (UserPublic);
+  updateSettings: (settings: UserSettings) -> ();
+  updateVideoPost: (postId: text, input: VideoPostInput) ->
+   (opt VideoPostView);
+  validateDailymotionApiKey: (key: text) -> (variant {
+                                               err: text;
+                                               ok;
+                                             }) query;
+  validateVimeoApiKey: (key: text) -> (variant {
+                                         err: text;
+                                         ok;
+                                       }) query;
+  validateYouTubeApiKey: (key: text) -> (variant {
+                                           err: text;
+                                           ok;
+                                         }) query;
+  verifyGoogleOAuth: (idToken: text) -> (AuthResult);
+}

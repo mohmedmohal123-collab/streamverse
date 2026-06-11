@@ -1,0 +1,908 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-display: "Space Grotesk";
+    --font-body: "DM Sans";
+    --font-mono: "Geist Mono";
+    --radius: 0.625rem;
+
+    --background: 0.99 0.005 260;
+    --foreground: 0.15 0.01 260;
+    --card: 1.0 0.0 0;
+    --card-foreground: 0.15 0.01 260;
+    --popover: 1.0 0.0 0;
+    --popover-foreground: 0.15 0.01 260;
+
+    --primary: 0.45 0.2 265;
+    --primary-foreground: 0.98 0.005 265;
+
+    --secondary: 0.95 0.01 260;
+    --secondary-foreground: 0.25 0.01 260;
+    --muted: 0.95 0.01 260;
+    --muted-foreground: 0.5 0.01 260;
+
+    --accent: 0.64 0.27 20;
+    --accent-foreground: 0.98 0.005 20;
+
+    --destructive: 0.55 0.22 25;
+    --destructive-foreground: 0.98 0.005 25;
+
+    --border: 0.9 0.01 260;
+    --input: 0.9 0.01 260;
+    --ring: 0.45 0.2 265;
+
+    --chart-1: 0.65 0.22 40;
+    --chart-2: 0.6 0.12 185;
+    --chart-3: 0.4 0.07 227;
+    --chart-4: 0.83 0.19 84;
+    --chart-5: 0.77 0.19 70;
+
+    --sidebar: 0.98 0 0;
+    --sidebar-foreground: 0.15 0 0;
+    --sidebar-primary: 0.45 0.2 265;
+    --sidebar-primary-foreground: 0.98 0.005 265;
+    --sidebar-accent: 0.95 0 0;
+    --sidebar-accent-foreground: 0.25 0 0;
+    --sidebar-border: 0.9 0 0;
+    --sidebar-ring: 0.45 0.2 265;
+
+    /* Social interaction tokens */
+    --social-like: 0.62 0.25 120;
+    --social-like-foreground: 0.98 0.005 120;
+    --social-comment: 0.55 0.01 260;
+    --social-comment-foreground: 0.95 0.005 260;
+    --social-share: 0.68 0.24 270;
+    --social-share-foreground: 0.12 0.01 270;
+
+    /* Camera & filter tokens */
+    --filter-overlay: 0.2 0.015 260;
+    --filter-active: 0.68 0.24 270;
+    --filter-preview-bg: 0.1 0.01 260;
+
+    /* Notification & subscription tokens */
+    --notification-unread: 0.64 0.27 20;
+    --subscription-featured: 0.72 0.22 290;
+    --subscription-item-bg: 0.18 0.01 260;
+  }
+
+  .dark {
+    --background: 0.12 0.01 260;
+    --foreground: 0.95 0.005 260;
+    --card: 0.16 0.015 260;
+    --card-foreground: 0.95 0.005 260;
+    --popover: 0.2 0.015 260;
+    --popover-foreground: 0.95 0.005 260;
+
+    --primary: 0.68 0.24 270;
+    --primary-foreground: 0.12 0.01 270;
+
+    --secondary: 0.22 0.02 260;
+    --secondary-foreground: 0.85 0.01 260;
+    --muted: 0.22 0.02 260;
+    --muted-foreground: 0.55 0.01 260;
+
+    --accent: 0.64 0.27 20;
+    --accent-foreground: 0.98 0.005 20;
+
+    --destructive: 0.65 0.19 22;
+    --destructive-foreground: 0.95 0.005 22;
+
+    --border: 0.28 0.015 260;
+    --input: 0.28 0.015 260;
+    --ring: 0.68 0.24 270;
+
+    --chart-1: 0.49 0.24 264;
+    --chart-2: 0.7 0.17 162;
+    --chart-3: 0.77 0.19 70;
+    --chart-4: 0.63 0.27 304;
+    --chart-5: 0.65 0.25 16;
+
+    --sidebar: 0.16 0.015 260;
+    --sidebar-foreground: 0.95 0.005 260;
+    --sidebar-primary: 0.68 0.24 270;
+    --sidebar-primary-foreground: 0.12 0.01 270;
+    --sidebar-accent: 0.22 0.02 260;
+    --sidebar-accent-foreground: 0.85 0.01 260;
+    --sidebar-border: 0.28 0.015 260;
+    --sidebar-ring: 0.68 0.24 270;
+
+    /* Social interaction tokens */
+    --social-like: 0.62 0.25 120;
+    --social-like-foreground: 0.98 0.005 120;
+    --social-comment: 0.55 0.01 260;
+    --social-comment-foreground: 0.95 0.005 260;
+    --social-share: 0.68 0.24 270;
+    --social-share-foreground: 0.12 0.01 270;
+
+    /* Camera & filter tokens */
+    --filter-overlay: 0.2 0.015 260;
+    --filter-active: 0.68 0.24 270;
+    --filter-preview-bg: 0.1 0.01 260;
+
+    /* Notification & subscription tokens */
+    --notification-unread: 0.64 0.27 20;
+    --subscription-featured: 0.72 0.22 290;
+    --subscription-item-bg: 0.18 0.01 260;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    height: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    min-height: 100%;
+    overscroll-behavior: contain;
+  }
+
+  #root {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/assets/fonts/SpaceGrotesk.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  src: url("/assets/fonts/DMSans.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/assets/fonts/GeistMono.woff2") format("woff2");
+  font-display: swap;
+}
+
+@layer utilities {
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-page {
+    animation: page-fade 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes page-fade {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-in-bottom {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes rotate-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .gradient-primary {
+    background: linear-gradient(
+      135deg,
+      oklch(var(--primary) / 1) 0%,
+      oklch(0.72 0.22 290) 100%
+    );
+  }
+
+  .gradient-accent {
+    background: linear-gradient(
+      135deg,
+      oklch(0.68 0.24 270) 0%,
+      oklch(0.72 0.22 290) 100%
+    );
+  }
+
+  .glass-effect {
+    backdrop-filter: blur(10px);
+    background: oklch(var(--card) / 0.8);
+    border: 1px solid oklch(var(--border) / 0.3);
+  }
+
+  .glass-elevated {
+    backdrop-filter: blur(16px);
+    background: oklch(var(--card) / 0.9);
+    border: 1px solid oklch(var(--border) / 0.4);
+  }
+
+  .video-card {
+    @apply relative overflow-hidden rounded-lg bg-card transition-all duration-300 hover:shadow-2xl;
+  }
+
+  .video-overlay {
+    @apply absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent;
+  }
+
+  .gradient-text {
+    background: linear-gradient(
+      135deg,
+      oklch(0.68 0.24 270) 0%,
+      oklch(0.72 0.22 290) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .stagger-item-1 {
+    animation: page-fade 0.4s ease-out 0.1s both;
+  }
+
+  .stagger-item-2 {
+    animation: page-fade 0.4s ease-out 0.2s both;
+  }
+
+  .stagger-item-3 {
+    animation: page-fade 0.4s ease-out 0.3s both;
+  }
+
+  .hero-glow {
+    position: relative;
+    z-index: 0;
+  }
+
+  .hero-glow::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(
+      135deg,
+      oklch(0.68 0.24 270 / 0.2),
+      oklch(0.72 0.22 290 / 0.1)
+    );
+    border-radius: var(--radius);
+    z-index: -1;
+  }
+
+  .button-primary {
+    @apply px-6 py-3 rounded-md gradient-primary text-primary-foreground font-semibold transition-smooth hover:shadow-elevated focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
+  }
+
+  .button-secondary {
+    @apply px-6 py-3 rounded-md bg-secondary text-secondary-foreground font-semibold transition-smooth hover:bg-opacity-80 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
+  }
+
+  /* Social interaction components */
+  .social-button {
+    @apply inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-smooth hover:bg-opacity-80 focus:ring-2 focus:ring-ring;
+  }
+
+  .social-button-like {
+    @apply bg-[oklch(var(--social-like)/0.1)] text-[oklch(var(--social-like))] hover:bg-[oklch(var(--social-like)/0.2)];
+  }
+
+  .social-button-comment {
+    @apply bg-[oklch(var(--social-comment)/0.1)] text-[oklch(var(--social-comment-foreground))] hover:bg-[oklch(var(--social-comment)/0.2)];
+  }
+
+  .social-button-share {
+    @apply bg-[oklch(var(--social-share)/0.1)] text-[oklch(var(--social-share))] hover:bg-[oklch(var(--social-share)/0.2)];
+  }
+
+  .comment-thread {
+    @apply space-y-3 p-4 bg-[oklch(var(--card)/0.5)] rounded-lg border border-[oklch(var(--border)/0.2)];
+  }
+
+  .comment-card {
+    @apply flex gap-3 p-3 rounded-md bg-[oklch(var(--muted)/0.3)] hover:bg-[oklch(var(--muted)/0.5)] transition-smooth;
+  }
+
+  /* Camera & filter UI */
+  .filter-preview {
+    @apply relative w-full aspect-video bg-[oklch(var(--filter-preview-bg))] rounded-lg overflow-hidden border border-[oklch(var(--border)/0.3)];
+  }
+
+  .filter-carousel {
+    @apply flex gap-2 overflow-x-auto pb-2;
+  }
+
+  .filter-item {
+    @apply flex-shrink-0 w-16 h-16 rounded-lg bg-[oklch(var(--filter-overlay))] border-2 border-[oklch(var(--border)/0.3)] cursor-pointer transition-smooth hover:border-[oklch(var(--filter-active))];
+  }
+
+  .filter-item-active {
+    @apply border-[oklch(var(--filter-active))] bg-[oklch(var(--filter-active)/0.1)] shadow-glow;
+  }
+
+  .camera-controls {
+    @apply flex gap-3 items-center justify-center p-4 bg-[oklch(var(--card)/0.8)] rounded-lg border border-[oklch(var(--border)/0.3)];
+  }
+
+  .record-button {
+    @apply w-16 h-16 rounded-full gradient-primary text-primary-foreground flex items-center justify-center font-bold text-lg transition-smooth hover:shadow-elevated active:scale-95;
+  }
+
+  .record-indicator {
+    @apply w-4 h-4 bg-red-500 rounded-full animate-pulse;
+  }
+
+  /* Login & auth forms */
+  .auth-form-container {
+    @apply w-full max-w-md mx-auto space-y-4;
+  }
+
+  .form-input {
+    @apply w-full px-4 py-3 bg-[oklch(var(--input))] text-foreground rounded-md border border-[oklch(var(--border))] focus:border-primary focus:ring-2 focus:ring-[oklch(var(--ring)/0.3)] transition-smooth;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-foreground mb-2;
+  }
+
+  .auth-divider {
+    @apply flex items-center gap-3 my-4;
+  }
+
+  .auth-divider::before,
+  .auth-divider::after {
+    content: "";
+    @apply flex-1 h-px bg-[oklch(var(--border)/0.5)];
+  }
+
+  /* Admin monetization dashboard */
+  .admin-tab-panel {
+    @apply p-6 space-y-6;
+  }
+
+  .admin-stat-card {
+    @apply p-4 bg-card rounded-lg border border-[oklch(var(--border)/0.2)] space-y-1;
+  }
+
+  .admin-stat-value {
+    @apply text-2xl font-bold text-foreground;
+  }
+
+  .admin-stat-label {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .admin-config-section {
+    @apply space-y-3 p-4 bg-[oklch(var(--muted)/0.3)] rounded-lg border border-[oklch(var(--border)/0.2)];
+  }
+
+  .admin-config-title {
+    @apply text-sm font-semibold text-foreground;
+  }
+
+  .revenue-chart {
+    @apply w-full h-64 bg-[oklch(var(--card)/0.5)] rounded-lg border border-[oklch(var(--border)/0.2)] flex items-center justify-center text-muted-foreground;
+  }
+
+  /* ── Welcome screen: cinematic launch animations ── */
+
+  @keyframes welcome-logo-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.5) translateY(20px);
+      filter: blur(12px);
+    }
+    60% {
+      filter: blur(0px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      filter: blur(0px);
+    }
+  }
+
+  @keyframes welcome-slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(32px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes welcome-card-in {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @keyframes welcome-particle-float {
+    0%,
+    100% {
+      transform: translateY(0) scale(1);
+      opacity: inherit;
+    }
+    50% {
+      transform: translateY(-18px) scale(1.5);
+      opacity: 0.15;
+    }
+  }
+
+  @keyframes welcome-orb-rotate {
+    0% {
+      transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    }
+    33% {
+      transform: translate(-50%, -50%) rotate(120deg) scale(1.08);
+    }
+    66% {
+      transform: translate(-50%, -50%) rotate(240deg) scale(0.96);
+    }
+    100% {
+      transform: translate(-50%, -50%) rotate(360deg) scale(1);
+    }
+  }
+
+  @keyframes welcome-ring-pulse {
+    0%,
+    100% {
+      opacity: 0.4;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.15;
+      transform: scale(1.12);
+    }
+  }
+
+  @keyframes welcome-btn-pulse-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 oklch(0.68 0.24 270 / 0.5);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 0 0 18px oklch(0.68 0.24 270 / 0);
+      transform: scale(1.02);
+    }
+  }
+
+  .welcome-particle {
+    position: absolute;
+    border-radius: 50%;
+    background: oklch(0.68 0.24 270);
+    animation: welcome-particle-float linear infinite;
+  }
+
+  .welcome-orb-main {
+    background: conic-gradient(
+      from 0deg,
+      oklch(0.68 0.24 270 / 0.18),
+      oklch(0.72 0.22 290 / 0.12),
+      oklch(0.62 0.25 250 / 0.15),
+      oklch(0.78 0.2 310 / 0.1),
+      oklch(0.68 0.24 270 / 0.18)
+    );
+    filter: blur(80px);
+    animation: welcome-orb-rotate 20s linear infinite;
+  }
+
+  .welcome-ring-outer {
+    width: calc(100% + 24px);
+    height: calc(100% + 24px);
+    top: -12px;
+    left: -12px;
+    background: conic-gradient(
+      oklch(0.68 0.24 270 / 0.5),
+      transparent 60%,
+      oklch(0.72 0.22 290 / 0.4)
+    );
+    animation: reel-spin 6s linear infinite;
+    mask: radial-gradient(transparent 70%, black 72%);
+    -webkit-mask: radial-gradient(transparent 70%, black 72%);
+  }
+
+  .welcome-ring-inner {
+    width: calc(100% + 8px);
+    height: calc(100% + 8px);
+    top: -4px;
+    left: -4px;
+    background: conic-gradient(
+      transparent 40%,
+      oklch(0.72 0.22 290 / 0.6),
+      transparent 70%
+    );
+    animation: reel-spin 4s linear infinite reverse;
+    mask: radial-gradient(transparent 65%, black 67%);
+    -webkit-mask: radial-gradient(transparent 65%, black 67%);
+  }
+
+  .welcome-btn-glow {
+    inset: -6px;
+    animation: welcome-btn-pulse-glow 2s ease-in-out infinite;
+    background: radial-gradient(
+      circle,
+      oklch(0.68 0.24 270 / 0.25) 0%,
+      transparent 70%
+    );
+    border-radius: 9999px;
+  }
+
+  /* Welcome screen animations */
+  .welcome-hero {
+    @apply text-center py-12 md:py-20 space-y-4;
+  }
+
+  .feature-card {
+    @apply glass-elevated p-6 rounded-lg space-y-2 transition-smooth hover:shadow-elevated;
+  }
+
+  .feature-icon {
+    @apply text-4xl mb-2;
+  }
+
+  .feature-title {
+    @apply font-display font-bold text-lg text-foreground;
+  }
+
+  .feature-description {
+    @apply text-sm text-muted-foreground;
+  }
+
+  /* Cinematic welcome animations */
+  @keyframes orb-float-1 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(30px, -40px) scale(1.05);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.97);
+    }
+  }
+  @keyframes orb-float-2 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    40% {
+      transform: translate(-40px, 30px) scale(1.08);
+    }
+    70% {
+      transform: translate(25px, -25px) scale(0.95);
+    }
+  }
+  @keyframes orb-float-3 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    30% {
+      transform: translate(20px, 40px) scale(1.03);
+    }
+    60% {
+      transform: translate(-35px, -15px) scale(1.06);
+    }
+  }
+
+  @keyframes play-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 oklch(0.68 0.24 270 / 0.4);
+    }
+    50% {
+      transform: scale(1.08);
+      box-shadow: 0 0 0 14px oklch(0.68 0.24 270 / 0);
+    }
+  }
+  @keyframes reel-spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes reel-dot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+
+  @keyframes slide-up-fade {
+    from {
+      opacity: 0;
+      transform: translateY(36px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.88) translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  @keyframes exit-fade {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.04);
+    }
+  }
+
+  .welcome-exit {
+    animation: exit-fade 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .orb-1 {
+    animation: orb-float-1 12s ease-in-out infinite;
+  }
+  .orb-2 {
+    animation: orb-float-2 16s ease-in-out infinite;
+  }
+  .orb-3 {
+    animation: orb-float-3 10s ease-in-out infinite;
+  }
+
+  .anim-slide-up {
+    animation: slide-up-fade 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .anim-fade-in {
+    animation: fade-in 0.6s ease-out both;
+  }
+  .anim-scale-in {
+    animation: scale-in 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .delay-0 {
+    animation-delay: 0ms;
+  }
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+  .delay-400 {
+    animation-delay: 400ms;
+  }
+  .delay-550 {
+    animation-delay: 550ms;
+  }
+  .delay-650 {
+    animation-delay: 650ms;
+  }
+  .delay-750 {
+    animation-delay: 750ms;
+  }
+  .delay-900 {
+    animation-delay: 900ms;
+  }
+
+  .play-icon-pulse {
+    animation: play-pulse 2.4s ease-in-out infinite;
+  }
+  .reel-spin {
+    animation: reel-spin 4s linear infinite;
+  }
+  .reel-dot-anim {
+    animation: reel-dot 1.2s ease-in-out infinite;
+  }
+
+  /* Modal & overlay */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50;
+  }
+
+  .modal-content {
+    @apply glass-elevated max-w-md w-full mx-4 rounded-lg space-y-4 p-6;
+  }
+
+  .share-option {
+    @apply p-3 rounded-lg bg-[oklch(var(--muted)/0.3)] cursor-pointer transition-smooth hover:bg-[oklch(var(--muted)/0.6)] flex items-center gap-3;
+  }
+
+  .share-option-icon {
+    @apply text-xl;
+  }
+
+  .share-option-label {
+    @apply text-sm font-medium text-foreground;
+  }
+
+  /* ── Notification bell & badge ── */
+  .notification-bell {
+    @apply relative cursor-pointer transition-smooth hover:text-primary;
+  }
+
+  .notification-badge {
+    @apply absolute -top-2 -right-2 w-5 h-5 bg-[oklch(var(--notification-unread))] text-primary-foreground rounded-full text-xs font-bold flex items-center justify-center;
+  }
+
+  .notification-badge-dot {
+    @apply w-2 h-2 bg-[oklch(var(--notification-unread))] rounded-full;
+  }
+
+  /* Notification feed page */
+  .notification-feed-container {
+    @apply space-y-3 max-w-2xl mx-auto;
+  }
+
+  .notification-item {
+    @apply glass-effect p-4 rounded-lg flex items-start gap-4 transition-smooth hover:bg-[oklch(var(--card)/0.9)];
+  }
+
+  .notification-item-avatar {
+    @apply w-12 h-12 rounded-full bg-primary/20 flex-shrink-0 flex items-center justify-center text-lg;
+  }
+
+  .notification-item-content {
+    @apply flex-1 space-y-1;
+  }
+
+  .notification-item-action {
+    @apply text-sm text-foreground font-medium;
+  }
+
+  .notification-item-timestamp {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .notification-item-unread {
+    @apply before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-primary;
+  }
+
+  /* ── Stripe subscription tiers ── */
+  .subscription-tiers-container {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto;
+  }
+
+  .subscription-tier-card {
+    @apply glass-effect p-6 rounded-lg space-y-4 transition-smooth relative;
+  }
+
+  .subscription-tier-card.featured {
+    @apply md:scale-105 shadow-elevated border-2 border-[oklch(var(--subscription-featured))];
+  }
+
+  .subscription-tier-badge {
+    @apply absolute -top-3 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-[oklch(var(--subscription-featured))] text-primary-foreground text-xs font-bold rounded-full;
+  }
+
+  .subscription-tier-name {
+    @apply font-display font-bold text-lg text-foreground;
+  }
+
+  .subscription-tier-price {
+    @apply text-3xl font-bold text-foreground;
+  }
+
+  .subscription-tier-price-period {
+    @apply text-xs text-muted-foreground font-normal;
+  }
+
+  .subscription-tier-description {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .subscription-tier-features {
+    @apply space-y-2;
+  }
+
+  .subscription-tier-feature {
+    @apply text-sm text-foreground flex items-center gap-2;
+  }
+
+  .subscription-tier-feature-check {
+    @apply w-4 h-4 rounded-full bg-primary/30 flex items-center justify-center text-xs text-primary;
+  }
+
+  .subscription-tier-cta {
+    @apply w-full py-3 px-4 rounded-md font-semibold transition-smooth;
+  }
+
+  .subscription-tier-cta-primary {
+    @apply gradient-primary text-primary-foreground hover:shadow-elevated;
+  }
+
+  .subscription-tier-cta-secondary {
+    @apply bg-muted text-muted-foreground hover:bg-opacity-80;
+  }
+
+  /* Subscription upgrade modal */
+  .subscription-modal-overlay {
+    @apply fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4;
+  }
+
+  .subscription-modal-content {
+    @apply glass-elevated max-w-5xl w-full rounded-lg space-y-6 p-8;
+  }
+
+  .subscription-modal-header {
+    @apply space-y-2;
+  }
+
+  .subscription-modal-title {
+    @apply font-display font-bold text-3xl text-foreground;
+  }
+
+  .subscription-modal-subtitle {
+    @apply text-muted-foreground;
+  }
+
+  .subscription-modal-close {
+    @apply absolute top-4 right-4 p-2 rounded-md hover:bg-muted transition-smooth;
+  }
+}
+
+.pb-safe {
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+}
+
+.pt-safe {
+  padding-top: max(0px, env(safe-area-inset-top));
+}
+
+.mb-nav {
+  margin-bottom: calc(4rem + max(0px, env(safe-area-inset-bottom)));
+}
+
+@media (max-width: 480px) {
+  .modal-content,
+  [role="dialog"] > div,
+  .dialog-content {
+    max-height: 85vh !important;
+    overflow-y: auto;
+  }
+
+  .video-player-dialog {
+    padding: 0.5rem;
+  }
+}

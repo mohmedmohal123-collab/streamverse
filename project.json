@@ -1,0 +1,25 @@
+{
+  "overview": "StreamVerse is a professional bilingual video platform combining Netflix-style browsing and TikTok-style feed with safe downloads from Vimeo, Dailymotion, and Internet Archive.",
+  "features": [
+    "Netflix-style home with horizontal rows and featured banner",
+    "TikTok-style full-screen vertical swipe feed",
+    "Safe client-side downloads from Vimeo, Dailymotion, and Internet Archive",
+    "Smart recommendations based on real watch history",
+    "Subscription tiers with server-side enforcement",
+    "Expanded admin panel with provider management and analytics",
+    "Bilingual Arabic/English with RTL support",
+    "Mobile-first PWA with dark mode"
+  ],
+  "category": "video-platform",
+  "tags": [
+    "video",
+    "streaming",
+    "bilingual",
+    "arabic",
+    "netflix",
+    "tiktok",
+    "pwa",
+    "mobile-first"
+  ],
+  "last_updated": "2026-06-02T01:07:25.265Z"
+}
