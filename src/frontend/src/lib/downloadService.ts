@@ -388,7 +388,7 @@ if (
   url.includes("youtube.com")
 ) {
   const res = await fetch(
-    `http://localhost:3001/download?url=${encodeURIComponent(url)}`
+    `https://streamverse-proxy.streamverseproxy.workers.dev/download?url=${encodeURIComponent(url)}`
   );
 
   const blob = await res.blob();
