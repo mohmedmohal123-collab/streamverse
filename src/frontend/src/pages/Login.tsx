@@ -282,30 +282,31 @@ const actor = actorState.actor;
               name?: string;
               picture?: string;
             };
-            // Try backend verification if actor is available
-            if (actor) {
-              try {
-                const result = await actor.verifyGoogleOAuth(
-                  tokenResponse.access_token,
+            // Try backend verification with REST API
+            try {
+              const googleRes = await fetch('http://localhost:3001/api/auth/verify-google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken: tokenResponse.access_token })
+              });
+              const result = await googleRes.json();
+              if (result.__kind__ === "ok") {
+                const username = userInfo.name ?? userInfo.email;
+                const admin = await checkIsAdmin();
+                persistGoogleSession(userInfo.sub, username, admin);
+                toast.success(
+                  isRTL
+                    ? "تم تسجيل الدخول بنجاح!"
+                    : "Signed in successfully!",
                 );
-                if (result.__kind__ === "ok") {
-                  const username = userInfo.name ?? userInfo.email;
-                  const admin = await checkIsAdmin();
-                  persistGoogleSession(userInfo.sub, username, admin);
-                  toast.success(
-                    isRTL
-                      ? "تم تسجيل الدخول بنجاح!"
-                      : "Signed in successfully!",
-                  );
-                  navigate({ to: admin ? "/admin" : "/" });
-                  return;
-                }
-              } catch (backendErr) {
-                console.warn(
-                  "Backend verifyGoogleOAuth failed, proceeding with client-side auth:",
-                  backendErr,
-                );
+                navigate({ to: admin ? "/admin" : "/" });
+                return;
               }
+            } catch (backendErr) {
+              console.warn(
+                "Backend verifyGoogleOAuth failed, proceeding with client-side auth:",
+                backendErr,
+              );
             }
             // Fallback: accept Google-verified identity client-side
             const username = userInfo.name ?? userInfo.email;
@@ -390,16 +391,21 @@ const actor = actorState.actor;
         setCredentialAuthenticated(true, username);
       }
 
-      const salt = await actor.getSaltForUser(username);
+      // Get salt from REST API
+      const saltRes = await fetch(`http://localhost:3001/api/auth/salt/${username}`);
+      const saltData = await saltRes.json();
+      const salt = saltData.__kind__ === 'ok' ? saltData.ok : null;
 
       if (salt === null) {
         // Salt is null → username truly not found (unless it's admin with missing seed)
         if (willBeAdmin) {
           // Try raw password as last resort (some older backend deploys)
-          const fallbackResult = await actor.loginWithCredentials(
-            username,
-            signInForm.password,
-          );
+          const fallbackRes = await fetch('http://localhost:3001/api/auth/login/credentials', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, passwordHash: signInForm.password })
+          });
+          const fallbackResult = await fallbackRes.json();
           if (fallbackResult.__kind__ === "ok") {
             setCredentialAuthenticated(true, username);
             await checkIsAdmin(username);
@@ -430,15 +436,24 @@ const actor = actorState.actor;
       const passwordHash = await hashPassword(signInForm.password, salt);
       // Cache credentials for API key auth in the admin panel
       if (isKnownAdmin(username)) cacheAdminCredentials(username, passwordHash);
-      let result = await actor.loginWithCredentials(username, passwordHash);
+      
+      // Login with REST API
+      const loginRes = await fetch('http://localhost:3001/api/auth/login/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, passwordHash })
+      });
+      let result = await loginRes.json();
 
       // For known admins: if hashed login fails, try raw password as fallback
       // (handles case where backend hash was computed differently)
       if (result.__kind__ !== "ok" && willBeAdmin) {
-        const rawResult = await actor.loginWithCredentials(
-          username,
-          signInForm.password,
-        );
+        const rawRes = await fetch('http://localhost:3001/api/auth/login/credentials', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, passwordHash: signInForm.password })
+        });
+        const rawResult = await rawRes.json();
         if (rawResult.__kind__ === "ok") {
           result = rawResult;
         }
@@ -520,12 +535,17 @@ const actor = actorState.actor;
     try {
       const salt = generateSalt();
       const passwordHash = await hashPassword(registerForm.password, salt);
-      const result = await actor.registerWithCredentials(
-        registerForm.username.trim(),
-        registerForm.email.trim(),
-        passwordHash,
-        salt,
-      );
+      const registerRes = await fetch('http://localhost:3001/api/auth/register/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: registerForm.username.trim(),
+          email: registerForm.email.trim(),
+          passwordHash,
+          salt
+        })
+      });
+      const result = await registerRes.json();
       if (result.__kind__ === "ok") {
         setCredentialAuthenticated(true, registerForm.username.trim());
         const admin = await checkIsAdmin(registerForm.username.trim());
