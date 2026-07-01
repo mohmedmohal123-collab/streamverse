@@ -1,6 +1,3 @@
 {
-  "buildCommand": "pnpm build",
-  "functions": {
-    "api/**/*.ts": {}
-  }
+  "buildCommand": "pnpm build"
 }
