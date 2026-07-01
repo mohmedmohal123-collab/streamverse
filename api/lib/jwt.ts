@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import type { UserId, JwtPayload } from '../types/auth';
+import type { UserId, JwtPayload } from '../types/auth.js';
 
 const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
 const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
@@ -25,3 +25,4 @@ export function verifyToken(token: string): JwtPayload | null {
     return null;
   }
 }
+

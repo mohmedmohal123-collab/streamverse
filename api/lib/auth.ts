@@ -1,12 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
-import { supabase, supabaseAdmin } from './supabase';
-import { generateToken, verifyToken } from './jwt';
-import { verifyGoogleIdToken } from './google';
+import { supabase, supabaseAdmin } from './supabase.js';
+import { generateToken, verifyToken } from './jwt.js';
+import { verifyGoogleIdToken } from './google.js';
 import type { 
   UserId, 
   AuthResult, 
   UserPublic 
-} from '../types/auth';
+} from '../types/auth.js';
 
 /**
  * AuthService - Handles authentication operations migrated from auth-api.mo
@@ -348,3 +348,4 @@ export class AuthService {
 }
 
 export const authService = new AuthService();
+

@@ -23,3 +23,4 @@ export async function verifyGoogleIdToken(idToken: string): Promise<any> {
 
   return ticket.getPayload();
 }
+

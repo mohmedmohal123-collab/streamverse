@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { authService } from '../lib/auth';
-import { generateToken } from '../lib/jwt';
+import { authService } from '../lib/auth.js';
+import { generateToken } from '../lib/jwt.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -39,3 +39,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ __kind__: 'err', err: 'Internal server error' });
   }
 }
+
