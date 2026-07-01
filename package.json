@@ -14,10 +14,17 @@
     "bindgen": "caffeine-bindgen --did-file ./src/backend/dist/backend.did --out-dir ./src/frontend/src --actor-interface-file --force"
   },
   "devDependencies": {
-    "sharp": "^0.34.4"
+    "sharp": "^0.34.4",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.10.5",
+    "@types/uuid": "^9.0.7"
   },
   "dependencies": {
     "@caffeineai/core-infrastructure": "^0.3.0",
-    "@supabase/supabase-js": "^2.108.2"
+    "@supabase/supabase-js": "^2.108.2",
+    "@vercel/node": "^3.0.0",
+    "google-auth-library": "^9.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^9.0.1"
   }
 }

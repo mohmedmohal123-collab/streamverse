@@ -284,7 +284,7 @@ const actor = actorState.actor;
             };
             // Try backend verification with REST API
             try {
-              const googleRes = await fetch('http://localhost:3001/api/auth/verify-google', {
+              const googleRes = await fetch('/api/auth/verify-google', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ idToken: tokenResponse.access_token })
@@ -392,7 +392,7 @@ const actor = actorState.actor;
       }
 
       // Get salt from REST API
-      const saltRes = await fetch(`http://localhost:3001/api/auth/salt/${username}`);
+      const saltRes = await fetch(`/api/auth/salt/${username}`);
       const saltData = await saltRes.json();
       const salt = saltData.__kind__ === 'ok' ? saltData.ok : null;
 
@@ -400,7 +400,7 @@ const actor = actorState.actor;
         // Salt is null → username truly not found (unless it's admin with missing seed)
         if (willBeAdmin) {
           // Try raw password as last resort (some older backend deploys)
-          const fallbackRes = await fetch('http://localhost:3001/api/auth/login/credentials', {
+          const fallbackRes = await fetch('/api/auth/login/credentials', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, passwordHash: signInForm.password })
@@ -438,7 +438,7 @@ const actor = actorState.actor;
       if (isKnownAdmin(username)) cacheAdminCredentials(username, passwordHash);
       
       // Login with REST API
-      const loginRes = await fetch('http://localhost:3001/api/auth/login/credentials', {
+      const loginRes = await fetch('/api/auth/login/credentials', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, passwordHash })
@@ -448,7 +448,7 @@ const actor = actorState.actor;
       // For known admins: if hashed login fails, try raw password as fallback
       // (handles case where backend hash was computed differently)
       if (result.__kind__ !== "ok" && willBeAdmin) {
-        const rawRes = await fetch('http://localhost:3001/api/auth/login/credentials', {
+        const rawRes = await fetch('/api/auth/login/credentials', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, passwordHash: signInForm.password })
@@ -535,7 +535,7 @@ const actor = actorState.actor;
     try {
       const salt = generateSalt();
       const passwordHash = await hashPassword(registerForm.password, salt);
-      const registerRes = await fetch('http://localhost:3001/api/auth/register/credentials', {
+      const registerRes = await fetch('/api/auth/register/credentials', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,58 +1,18 @@
 import { v4 as uuidv4 } from 'uuid';
-import { supabase, supabaseAdmin } from '../config';
+import { supabase, supabaseAdmin } from './supabase';
+import { generateToken, verifyToken } from './jwt';
+import { verifyGoogleIdToken } from './google';
 import type { 
   UserId, 
   AuthResult, 
-  CredentialAuth, 
-  GoogleOAuthLink, 
-  RegisterInput,
   UserPublic 
-} from '../types';
-import { OAuth2Client } from 'google-auth-library';
+} from '../types/auth';
 
 /**
  * AuthService - Handles authentication operations migrated from auth-api.mo
  * Maintains compatibility with existing Motoko auth interface
  */
 export class AuthService {
-  private readonly jwtSecret: string;
-  private readonly jwtExpiresIn: string;
- private googleClient?: OAuth2Client;
-  constructor() {
-    this.jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
-    this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
-    
-    // Initialize Google OAuth client
-    const googleClientId = process.env.GOOGLE_CLIENT_ID;
-    if (googleClientId) {
-      this.googleClient = new OAuth2Client(googleClientId);
-    }
-  }
-
-  /**
-   * Generate a JWT token for a user
-   */
-  generateToken(userId: UserId): string {
-    const jwt = require('jsonwebtoken');
-    return jwt.sign(
-      { userId },
-      this.jwtSecret,
-      { expiresIn: this.jwtExpiresIn }
-    );
-  }
-
-  /**
-   * Verify a JWT token and return the payload
-   */
-  verifyToken(token: string): { userId: UserId } | null {
-    try {
-      const jwt = require('jsonwebtoken');
-      return jwt.verify(token, this.jwtSecret) as { userId: UserId };
-    } catch (error) {
-      return null;
-    }
-  }
-
   /**
    * Register a new user with username/email and client-side password hash+salt
    * Migrated from: registerWithCredentials in auth-api.mo
@@ -138,10 +98,10 @@ export class AuthService {
     try {
       // Get credential record
       const { data: credential, error: credentialError } = await supabaseAdmin
-      .from('credentials')
-     .select('*')
-    .eq('username', username)
-     .single();
+        .from('credentials')
+        .select('*')
+        .eq('username', username)
+        .single();
 
       if (credentialError || !credential) {
         return { __kind__: 'err', err: 'User not found' };
@@ -167,11 +127,6 @@ export class AuthService {
         return { __kind__: 'err', err: 'Account is banned' };
       }
 
-      // Ensure admin role is set (matching Motoko behavior)
-      if (user.role === 'admin') {
-        // Role is already set in database, no additional action needed
-      }
-
       return { __kind__: 'ok', ok: credential.user_id as UserId };
     } catch (error) {
       console.error('Error in loginWithCredentials:', error);
@@ -179,47 +134,38 @@ export class AuthService {
     }
   }
 
- /**
- * Return the salt stored for a given username
- * Migrated from: getSaltForUser in auth-api.mo
- */
-async getSaltForUser(username: string): Promise<string | null> {
-  try {
+  /**
+   * Return the salt stored for a given username
+   * Migrated from: getSaltForUser in auth-api.mo
+   */
+  async getSaltForUser(username: string): Promise<string | null> {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('credentials')
+        .select('*')
+        .eq('username', username);
 
-    const { data: allRows, error: allError } = await supabaseAdmin
-      .from('credentials')
-      .select('*');
+      if (!data || data.length === 0) {
+        return null;
+      }
 
-
-    const { data, error } = await supabaseAdmin
-      .from('credentials')
-      .select('*')
-      .eq('username', username);
-
-    
-    if (!data || data.length === 0) {
+      return data[0].salt;
+    } catch (error) {
+      console.error('Error in getSaltForUser:', error);
       return null;
     }
-
-    return data[0].salt;
-
-  } catch (error) {
-    console.error('Error in getSaltForUser:', error);
-    return null;
   }
-}
 
   /**
-   * Verify a Google ID token, then find or create a user
-   * Returns the user's ID on success
+   * Verify a Google ID token and return the user's ID
    * Migrated from: verifyGoogleOAuth in auth-api.mo
    */
   async verifyGoogleOAuth(idToken: string): Promise<AuthResult> {
     try {
-      // Parse sub + email from the JWT payload
-      const googleData = await this.parseGoogleIdToken(idToken);
-      if (!googleData) {
-        return { __kind__: 'err', err: 'Invalid Google ID token' };
+      const googleData = await verifyGoogleIdToken(idToken);
+
+      if (!googleData || !googleData.sub) {
+        return { __kind__: 'err', err: 'Invalid Google token' };
       }
 
       const { sub: googleSub, email } = googleData;
@@ -310,59 +256,69 @@ async getSaltForUser(username: string): Promise<string | null> {
   }
 
   /**
-   * Link a Google account to the calling user
-   * Migrated from: linkGoogleAccount in auth-api.mo
+   * Delete a user account
    */
-  async linkGoogleAccount(
-    userId: UserId,
-    googleSub: string,
-    email: string
-  ): Promise<{ __kind__: 'ok' } | { __kind__: 'err'; err: string }> {
+  async deleteAccount(userId: UserId): Promise<{ __kind__: 'ok' } | { __kind__: 'err'; err: string }> {
     try {
       // Verify user exists
-      const { data: user, error: userError } = await supabase
+      const { data: user, error: userError } = await supabaseAdmin
         .from('users')
         .select('id')
         .eq('id', userId)
         .single();
 
       if (userError || !user) {
-        return { __kind__: 'err', err: 'Caller is not a registered user' };
+        return { __kind__: 'err', err: 'User not found' };
       }
 
-      // Reject if this googleSub is already linked to someone else
-      const { data: existingLink } = await supabase
-        .from('google_oauth_links')
-        .select('*')
-        .eq('google_sub', googleSub)
-        .single();
+      // Delete credential
+      await supabaseAdmin.from('credentials').delete().eq('user_id', userId);
 
-      if (existingLink) {
-        if (existingLink.user_id !== userId) {
-          return { __kind__: 'err', err: 'Google account already linked to another user' };
-        }
-        // Already linked to this user — idempotent
-        return { __kind__: 'ok' };
-      }
+      // Delete Google OAuth links
+      await supabaseAdmin.from('google_oauth_links').delete().eq('user_id', userId);
 
-      // Create the OAuth link
-      const now = Date.now();
-      const { error: linkError } = await supabaseAdmin.from('google_oauth_links').insert({
-        user_id: userId,
-        google_sub: googleSub,
-        email,
-        linked_at: new Date(now).toISOString()
-      });
-
-      if (linkError) {
-        console.error('Error creating Google OAuth link:', linkError);
-        return { __kind__: 'err', err: 'Failed to link Google account' };
-      }
+      // Delete user
+      await supabaseAdmin.from('users').delete().eq('id', userId);
 
       return { __kind__: 'ok' };
     } catch (error) {
-      console.error('Error in linkGoogleAccount:', error);
-      return { __kind__: 'err', err: 'Failed to link Google account' };
+      console.error('Error in deleteAccount:', error);
+      return { __kind__: 'err', err: 'Failed to delete account' };
+    }
+  }
+
+  /**
+   * Get user by ID
+   */
+  async getUser(userId: UserId): Promise<UserPublic | null> {
+    try {
+      const { data: user, error } = await supabaseAdmin
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error || !user) {
+        return null;
+      }
+
+      return {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        displayName: user.display_name,
+        avatarUrl: user.avatar_url,
+        role: user.role,
+        language: user.language,
+        darkMode: user.dark_mode,
+        createdAt: new Date(user.created_at).getTime(),
+        isBanned: user.is_banned,
+        facebookUrl: user.facebook_url || undefined,
+        tiktokUrl: user.tiktok_url || undefined
+      };
+    } catch (error) {
+      console.error('Error in getUser:', error);
+      return null;
     }
   }
 
@@ -389,39 +345,6 @@ async getSaltForUser(username: string): Promise<string | null> {
       n++;
     }
   }
-
-  /**
-   * Get user by ID
-   */
-  async getUser(userId: UserId): Promise<UserPublic | null> {
-    try {
-      const { data: user, error } = await supabaseAdmin
-      .from('users')
-      .select('*')
-     .eq('id', userId)
-     .single();
-
-      if (error || !user) {
-        return null;
-      }
-
-      return {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        displayName: user.display_name,
-        avatarUrl: user.avatar_url,
-        role: user.role,
-        language: user.language,
-        darkMode: user.dark_mode,
-        createdAt: new Date(user.created_at).getTime(),
-        isBanned: user.is_banned,
-        facebookUrl: user.facebook_url || undefined,
-        tiktokUrl: user.tiktok_url || undefined
-      };
-    } catch (error) {
-      console.error('Error in getUser:', error);
-      return null;
-    }
-  }
 }
+
+export const authService = new AuthService();
