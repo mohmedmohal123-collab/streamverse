@@ -28,8 +28,8 @@ export async function getYouTubeApiKey(
         localStorage.setItem(YOUTUBE_API_KEY_STORAGE, key);
         return key;
       }
-    } catch {
-      // ignore backend errors
+    } catch (e) {
+      console.warn("[backend] getYouTubeApiKey: backend fetch failed", e);
     }
   }
 
@@ -101,8 +101,8 @@ export async function getTikTokApiKey(
           return key;
         }
       }
-    } catch {
-      // ignore
+    } catch (e) {
+      console.warn("[backend] getTikTokApiKey: backend fetch failed", e);
     }
   }
 
@@ -138,7 +138,8 @@ export function getCustomProviders(): VideoProvider[] {
     const raw = localStorage.getItem(CUSTOM_PROVIDERS_KEY);
     if (!raw) return [];
     return JSON.parse(raw) as VideoProvider[];
-  } catch {
+  } catch (e) {
+    console.warn("[backend] getCustomProviders: parse failed", e);
     return [];
   }
 }
@@ -241,7 +242,9 @@ export async function getDailymotionApiKey(
           return key;
         }
       }
-    } catch { /* ignore */ }
+    } catch (e) {
+      console.warn("[backend] getDailymotionApiKey: backend fetch failed", e);
+    }
   }
   return "";
 }
@@ -267,7 +270,9 @@ export async function setDailymotionApiKey(
         return true;
       }
     }
-  } catch { /* ignore */ }
+  } catch (e) {
+    console.error("[backend] setDailymotionApiKey: save failed", e);
+  }
   return false;
 }
 
@@ -292,7 +297,9 @@ export async function getArchiveEnabled(
         localStorage.setItem(ARCHIVE_ENABLED_STORAGE, String(val));
         return val;
       }
-    } catch { /* ignore */ }
+    } catch (e) {
+      console.warn("[backend] getArchiveEnabled: fetch failed", e);
+    }
   }
   return false;
 }
@@ -318,7 +325,9 @@ export async function setArchiveEnabled(
         return true;
       }
     }
-  } catch { /* ignore */ }
+  } catch (e) {
+    console.error("[backend] setArchiveEnabled: save failed", e);
+  }
   return false;
 }
 
@@ -336,7 +345,9 @@ export async function getProviderEnabled(
         provider,
       );
     }
-  } catch { /* ignore */ }
+  } catch (e) {
+    console.warn(`[backend] getProviderEnabled("${provider}"): fetch failed`, e);
+  }
   return true;
 }
 
@@ -361,7 +372,9 @@ export async function setProviderEnabled(
       );
       return res.__kind__ === "ok";
     }
-  } catch { /* ignore */ }
+  } catch (e) {
+    console.error(`[backend] setProviderEnabled("${provider}"): save failed`, e);
+  }
   return false;
 }
 
@@ -382,7 +395,9 @@ export async function getDownloadAnalytics(
     if (typeof actorAny["getDownloadAnalytics"] === "function") {
       return await (actorAny["getDownloadAnalytics"] as () => Promise<DownloadAnalytics>)();
     }
-  } catch { /* ignore */ }
+  } catch (e) {
+    console.error("[backend] getDownloadAnalytics: fetch failed", e);
+  }
   return null;
 }
 
@@ -401,7 +416,9 @@ export async function canUserDownload(
       ) => Promise<{ allowed: boolean; reason?: string }>)(userId);
       return res;
     }
-  } catch { /* ignore */ }
+  } catch (e) {
+    console.error(`[backend] canUserDownload("${userId}"): check failed`, e);
+  }
   return { allowed: true };
 }
 
@@ -461,8 +478,8 @@ export function getDownloadLimitInfo(): DownloadLimitInfo {
         return { used, limit, remaining };
       }
     }
-  } catch {
-    // ignore
+  } catch (e) {
+    console.warn("[backend] getDownloadLimitInfo: parse failed", e);
   }
   return { used: 0, limit, remaining: limit };
 }
@@ -477,8 +494,8 @@ export function recordDownloadLocal(): void {
       if (rec.date === today) count = rec.count;
     }
     localStorage.setItem(DOWNLOAD_LIMIT_KEY, JSON.stringify({ date: today, count: count + 1 }));
-  } catch {
-    // ignore
+  } catch (e) {
+    console.warn("[backend] recordDownloadLocal: failed", e);
   }
 }
 
@@ -644,7 +661,8 @@ function readCache(key: string, query: string): VideoSearchResult[] | null {
     if (entry.query !== query) return null;
     if (Date.now() - entry.timestamp > CACHE_TTL_MS) return null;
     return entry.data;
-  } catch {
+  } catch (e) {
+    console.warn("[backend] readCache: parse failed", e);
     return null;
   }
 }
@@ -652,8 +670,8 @@ function readCache(key: string, query: string): VideoSearchResult[] | null {
 function writeCache(key: string, query: string, data: VideoSearchResult[]): void {
   try {
     localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now(), query }));
-  } catch {
-    // ignore
+  } catch (e) {
+    console.warn("[backend] writeCache: failed", e);
   }
 }
 
@@ -898,8 +916,8 @@ const PLAYLIST_CACHE_PREFIX = "streamverse_playlists_";
 function savePlaylistCache(userId: string, playlists: PlaylistData[]): void {
   try {
     localStorage.setItem(`${PLAYLIST_CACHE_PREFIX}${userId}`, JSON.stringify(playlists));
-  } catch {
-    // ignore
+  } catch (e) {
+    console.warn("[backend] savePlaylistCache: failed", e);
   }
 }
 
@@ -927,7 +945,8 @@ export async function getMyPlaylists(
     }));
     savePlaylistCache(userId, result);
     return result;
-  } catch {
+  } catch (e) {
+    console.warn("[backend] getMyPlaylists: fetch failed", e);
     return offline;
   }
 }
@@ -945,7 +964,8 @@ export async function createMyPlaylist(
     const res = await actor.createPlaylist(userId, name, desc, isPublic, token);
     if (res.__kind__ === "ok") return res.ok;
     return null;
-  } catch {
+  } catch (e) {
+    console.error("[backend] createMyPlaylist: failed", e);
     return null;
   }
 }
@@ -961,7 +981,8 @@ export async function addToPlaylist(
   try {
     const res = await actor.addVideoToPlaylist(playlistId, videoId, userId, token);
     return res.__kind__ === "ok";
-  } catch {
+  } catch (e) {
+    console.error("[backend] addToPlaylist: failed", e);
     return false;
   }
 }
@@ -977,7 +998,8 @@ export async function removeFromPlaylist(
   try {
     const res = await actor.removeVideoFromPlaylist(playlistId, videoId, userId, token);
     return res.__kind__ === "ok";
-  } catch {
+  } catch (e) {
+    console.error("[backend] removeFromPlaylist: failed", e);
     return false;
   }
 }

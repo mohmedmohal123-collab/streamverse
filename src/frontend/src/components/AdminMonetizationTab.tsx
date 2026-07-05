@@ -9,29 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  BadgeDollarSign,
-  BookOpen,
-  CheckCircle2,
-  CreditCard,
-  Crown,
-  ExternalLink,
-  Eye,
-  EyeOff,
-  LayoutGrid,
-  Lock,
-  LockOpen,
-  PiggyBank,
-  Plus,
-  Save,
-  Shield,
-  TrendingUp,
-  Unlink,
-  Wifi,
-  WifiOff,
-  XCircle,
-  Zap,
-} from "lucide-react";
+import { BadgeDollarSign, BookOpen, CircleCheck as CheckCircle2, CreditCard, Crown, ExternalLink, Eye, EyeOff, LayoutGrid, Lock, LockOpen, PiggyBank, Plus, Save, Shield, TrendingUp, Unlink, Wifi, WifiOff, Circle as XCircle, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SiStripe } from "react-icons/si";
 import { toast } from "sonner";
@@ -205,17 +183,32 @@ function StripeConfigCard({ isRTL }: { isRTL: boolean }) {
       return;
     }
     setConnecting(true);
+    let backendSaved = false;
     try {
       // Persist keys to backend (actor) so they are stored securely
       if (actor) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const actorAny = actor as any;
         if (typeof actorAny.setStripeKeys === "function") {
-          await actorAny.setStripeKeys(secKey, webhookSecret || "");
+          try {
+            await actorAny.setStripeKeys(secKey, webhookSecret || "");
+            backendSaved = true;
+          } catch (e) {
+            console.error("[Admin/Stripe] setStripeKeys failed", e);
+            toast.warning(
+              isRTL
+                ? "تعذر حفظ المفاتيح في الباكند — سيتم حفظها محلياً فقط"
+                : "Backend save failed — keys saved locally only",
+            );
+          }
+        } else {
+          console.warn("[Admin/Stripe] setStripeKeys not available on actor — saving locally only");
         }
+      } else {
+        console.warn("[Admin/Stripe] actor not connected — saving keys locally only");
       }
-    } catch {
-      // Backend call failed — still save locally so UI stays consistent
+    } catch (e) {
+      console.error("[Admin/Stripe] handleConnect: unexpected error", e);
     }
     // Persist to localStorage as a client-side cache
     localStorage.setItem("stripePublishableKey", pubKey);
@@ -231,10 +224,11 @@ function StripeConfigCard({ isRTL }: { isRTL: boolean }) {
       localStorage.setItem("stripePriceProAnnual", priceProAnnual);
     setConnected(true);
     setConnecting(false);
+    console.log("[Admin/Stripe] handleConnect complete", { backendSaved, mode: detectedMode });
     toast.success(
       isRTL
-        ? `تم ربط Stripe بنجاح (${detectedMode === "live" ? "البث المباشر" : "وضع الاختبار"})`
-        : `Stripe connected (${detectedMode === "live" ? "Live Mode" : "Test Mode"})`,
+        ? `تم ربط Stripe (${detectedMode === "live" ? "البث المباشر" : "وضع الاختبار"})${backendSaved ? "" : " — محلي فقط"}`
+        : `Stripe connected (${detectedMode === "live" ? "Live Mode" : "Test Mode"})${backendSaved ? "" : " — local only"}`,
     );
   }
 
@@ -703,9 +697,12 @@ function StripeConfigCard({ isRTL }: { isRTL: boolean }) {
 function RevenueDashboardCard({ isRTL }: { isRTL: boolean }) {
   // Read subscription stats from localStorage (written by useSubscription hook)
   const subRaw = localStorage.getItem("streamverse_subscription");
-  const subData = subRaw
-    ? (JSON.parse(subRaw) as { tier: string; status: string })
-    : null;
+  let subData: { tier: string; status: string } | null = null;
+  try {
+    subData = subRaw ? (JSON.parse(subRaw) as { tier: string; status: string }) : null;
+  } catch (e) {
+    console.warn("[Admin/Revenue] streamverse_subscription parse failed", e);
+  }
   const activeSubs = subData?.status === "active" ? 1 : 0;
   const tierPrices: Record<string, number> = { free: 0, plus: 4.99, pro: 9.99 };
   const monthlyRev =
@@ -1115,17 +1112,65 @@ export function AdminMonetizationTab({ isRTL }: { isRTL: boolean }) {
   }
 
   async function handleSaveAds() {
+    if (!adSlots.length) {
+      toast.error(isRTL ? "لا توجد مواضع إعلانات" : "No ad slots to save");
+      return;
+    }
     setSavingAds(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSavingAds(false);
-    toast.success(isRTL ? "تم حفظ إعدادات الإعلانات" : "Ad settings saved");
+    try {
+      localStorage.setItem(
+        "streamverse_ad_slots",
+        JSON.stringify(adSlots),
+      );
+      console.log("[Admin/Ads] ad slots saved locally", adSlots.length, "slots");
+      toast.success(
+        isRTL ? "تم حفظ إعدادات الإعلانات" : "Ad settings saved",
+      );
+    } catch (e) {
+      console.error("[Admin/Ads] handleSaveAds failed", e);
+      toast.error(
+        isRTL
+          ? "فشل حفظ إعدادات الإعلانات"
+          : "Failed to save ad settings",
+      );
+    } finally {
+      setSavingAds(false);
+    }
   }
 
   async function handleSavePayout() {
+    if (!payoutEmail.trim() && !payoutBank.trim()) {
+      toast.error(
+        isRTL
+          ? "أدخل بريد PayPal أو رقم IBAN"
+          : "Enter PayPal email or IBAN",
+      );
+      return;
+    }
     setSavingPayout(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSavingPayout(false);
-    toast.success(isRTL ? "تم حفظ إعدادات الدفع" : "Payout settings saved");
+    try {
+      localStorage.setItem(
+        "streamverse_payout_settings",
+        JSON.stringify({
+          email: payoutEmail.trim(),
+          bank: payoutBank.trim(),
+          min: payoutMin.trim(),
+        }),
+      );
+      console.log("[Admin/Payout] payout settings saved locally");
+      toast.success(
+        isRTL ? "تم حفظ إعدادات الدفع" : "Payout settings saved",
+      );
+    } catch (e) {
+      console.error("[Admin/Payout] handleSavePayout failed", e);
+      toast.error(
+        isRTL
+          ? "فشل حفظ إعدادات الدفع"
+          : "Failed to save payout settings",
+      );
+    } finally {
+      setSavingPayout(false);
+    }
   }
 
   return (

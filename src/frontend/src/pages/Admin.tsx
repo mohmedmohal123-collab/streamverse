@@ -577,8 +577,9 @@ async function testVimeoKey(key: string): Promise<KeyTestResult> {
       testedAt: Date.now(),
       message: `HTTP ${res.status} — key may be valid`,
     };
-  } catch {
+  } catch (e) {
     // CORS block — key is saved, mark as valid since we can't test from browser
+    console.warn("[Admin] testVimeoKey: CORS or network block", e);
     return {
       status: "valid",
       testedAt: Date.now(),
@@ -637,7 +638,8 @@ async function testTikTokKey(key: string): Promise<KeyTestResult> {
       testedAt: Date.now(),
       message: `HTTP ${res.status}`,
     };
-  } catch {
+  } catch (e) {
+    console.warn("[Admin] testTikTokKey: CORS or network block", e);
     return {
       status: "format_ok",
       testedAt: Date.now(),
@@ -673,22 +675,30 @@ function validateStripeSecret(k: string): string | null {
 }
 
 function parseBackendError(e: unknown): string {
-  const msg = String(e);
+  const raw = String(e);
+  // Try to extract Candid variant error message (e.g. err("Some message"))
+  const candidMatch = raw.match(/err\("([^"]+)"\)/);
+  if (candidMatch) return candidMatch[1];
+
   if (
-    msg.includes("auth") ||
-    msg.includes("unauthorized") ||
-    msg.includes("not authorized")
+    raw.includes("auth") ||
+    raw.includes("unauthorized") ||
+    raw.includes("not authorized") ||
+    raw.includes("NotAuthorized")
   )
     return "خطأ في الصلاحيات — أعد تسجيل الدخول (Auth error — please log in again)";
   if (
-    msg.includes("network") ||
-    msg.includes("fetch") ||
-    msg.includes("connect")
+    raw.includes("network") ||
+ raw.includes("fetch") ||
+    raw.includes("connect") ||
+    raw.includes("timeout")
   )
-    return "خطأ في الاتصال — حاول مرة أخرى (Connection error — please try again)";
-  if (msg.includes("invalid") || msg.includes("Invalid"))
-    return "المفتاح غير صالح — تحقق منه وأعد المحاولة";
-  return `فشل الحفظ — ${msg.slice(0, 120)}`;
+    return "خطأ في الاتصال بالخادم — تحقق من الإنترنت (Connection error — check your internet)";
+  if (raw.includes("invalid") || raw.includes("Invalid"))
+    return "المفتاح غير صالح — تحقق منه وأعد المحاولة (Invalid key — please verify and retry)";
+  if (raw.includes("already"))
+    return "القيمة موجودة مسبقاً (Already exists)";
+  return `فشل الحفظ — ${raw.slice(0, 150)}`;
 }
 
 function maskKey(k: string): string {
@@ -1277,6 +1287,7 @@ function ApiConfigTab({
     setSaving(true);
     try {
       let saved = false;
+      let lastError: unknown = null;
       const actorAny = actor as unknown as Record<
         string,
         (...args: unknown[]) => Promise<{ __kind__: string }>
@@ -1290,8 +1301,10 @@ function ApiConfigTab({
             ADMIN_TOKEN,
           );
           if (result0.__kind__ === "ok") saved = true;
-        } catch {
-          // fall through
+          else lastError = new Error("Backend rejected key (tier-0)");
+        } catch (e) {
+          console.warn("[Admin] YouTube save tier-0 (setYouTubeApiKeyByToken) failed", e);
+          lastError = e;
         }
       }
 
@@ -1303,8 +1316,10 @@ function ApiConfigTab({
             ADMIN_TOKEN,
           );
           if (result.__kind__ === "ok") saved = true;
-        } catch {
-          // fall through to credential method
+          else lastError = new Error("Backend rejected key (tier-1)");
+        } catch (e) {
+          console.warn("[Admin] YouTube save tier-1 (setYouTubeApiKeyWithToken) failed", e);
+          lastError = e;
         }
       }
 
@@ -1319,17 +1334,26 @@ function ApiConfigTab({
               creds.passwordHash,
             );
             if (result2.__kind__ === "ok") saved = true;
-          } catch {
-            // fall through to open method
+            else lastError = new Error("Backend rejected key (tier-2)");
+          } catch (e) {
+            console.warn("[Admin] YouTube save tier-2 (setYouTubeApiKeyAuth) failed", e);
+            lastError = e;
           }
         }
       }
 
       // Tier-3: open unauthenticated method (older backend deploys)
       if (!saved) {
-        await actor.setYouTubeApiKey(apiKey.trim());
-        saved = true;
+        try {
+          await actor.setYouTubeApiKey(apiKey.trim());
+          saved = true;
+        } catch (e) {
+          console.error("[Admin] YouTube save tier-3 (setYouTubeApiKey) failed", e);
+          lastError = e;
+        }
       }
+
+      if (!saved) throw lastError ?? new Error("All save methods failed");
 
       setYouTubeApiKey(apiKey.trim());
       setSavedYtKey(apiKey.trim());
@@ -1355,6 +1379,7 @@ function ApiConfigTab({
         );
       }
     } catch (e) {
+      console.error("[Admin] YouTube key save failed completely", e);
       setApiKeyError(
         isRTL
           ? "خطأ في المفتاح، أعد كتابة الصحيح"
@@ -1385,6 +1410,7 @@ function ApiConfigTab({
     setSavingVimeo(true);
     try {
       let saved = false;
+      let lastError: unknown = null;
       const actorAny = actor as unknown as Record<
         string,
         (...args: unknown[]) => Promise<{ __kind__: string }>
@@ -1398,8 +1424,10 @@ function ApiConfigTab({
             ADMIN_TOKEN,
           );
           if (result0.__kind__ === "ok") saved = true;
-        } catch {
-          // fall through
+          else lastError = new Error("Backend rejected key (tier-0)");
+        } catch (e) {
+          console.warn("[Admin] Vimeo save tier-0 (setVimeoApiKeyByToken) failed", e);
+          lastError = e;
         }
       }
 
@@ -1411,8 +1439,10 @@ function ApiConfigTab({
             ADMIN_TOKEN,
           );
           if (result.__kind__ === "ok") saved = true;
-        } catch {
-          // fall through to credential method
+          else lastError = new Error("Backend rejected key (tier-1)");
+        } catch (e) {
+          console.warn("[Admin] Vimeo save tier-1 (setVimeoApiKeyWithToken) failed", e);
+          lastError = e;
         }
       }
 
@@ -1427,17 +1457,26 @@ function ApiConfigTab({
               creds.passwordHash,
             );
             if (result2.__kind__ === "ok") saved = true;
-          } catch {
-            // fall through to open method
+            else lastError = new Error("Backend rejected key (tier-2)");
+          } catch (e) {
+            console.warn("[Admin] Vimeo save tier-2 (setVimeoApiKeyAuth) failed", e);
+            lastError = e;
           }
         }
       }
 
       // Tier-3: open unauthenticated method (older backend deploys)
       if (!saved) {
-        await actor.setVimeoApiKey(vimeoKey.trim());
-        saved = true;
+        try {
+          await actor.setVimeoApiKey(vimeoKey.trim());
+          saved = true;
+        } catch (e) {
+          console.error("[Admin] Vimeo save tier-3 (setVimeoApiKey) failed", e);
+          lastError = e;
+        }
       }
+
+      if (!saved) throw lastError ?? new Error("All save methods failed");
 
       setVimeoApiKey(vimeoKey.trim());
       setSavedVimeoKey(vimeoKey.trim());
@@ -1461,6 +1500,7 @@ function ApiConfigTab({
         );
       }
     } catch (e) {
+      console.error("[Admin] Vimeo key save failed completely", e);
       setVimeoKeyError(
         isRTL
           ? "خطأ في المفتاح، أعد كتابة الصحيح"
@@ -1489,6 +1529,7 @@ function ApiConfigTab({
     if (err) return;
     if (!tikTokKey.trim()) return;
     setSavingTikTok(true);
+    let backendSaved = false;
     try {
       if (actor) {
         const actorAny = actor as unknown as Record<
@@ -1498,15 +1539,20 @@ function ApiConfigTab({
         const creds = getCachedAdminCredentials();
         if (typeof actorAny.setTikTokApiKeyAuth === "function" && creds) {
           try {
-            await actorAny.setTikTokApiKeyAuth(
+            const res = await actorAny.setTikTokApiKeyAuth(
               tikTokKey.trim(),
               creds.username,
               creds.passwordHash,
             );
-          } catch {
-            /* ignore */
+            if (res.__kind__ === "ok") backendSaved = true;
+            else console.warn("[Admin] TikTok save: backend rejected key", res);
+          } catch (e) {
+            console.warn("[Admin] TikTok save (setTikTokApiKeyAuth) failed", e);
           }
         }
+      }
+      if (!backendSaved) {
+        console.warn("[Admin] TikTok key saved locally only — backend save skipped or failed");
       }
       setTikTokApiKey(tikTokKey.trim());
       setSavedTikTokKey(tikTokKey.trim());
@@ -1520,6 +1566,7 @@ function ApiConfigTab({
       setTikTokTestResult(r);
       setTikTokTesting(false);
     } catch (e) {
+      console.error("[Admin] TikTok key save failed", e);
       toast.error(parseBackendError(e));
     } finally {
       setSavingTikTok(false);
@@ -1588,7 +1635,8 @@ function ApiConfigTab({
               let stKey = "";
               try {
                 if (actor) stKey = await actor.getStripePublishableKey();
-              } catch {
+              } catch (e) {
+                console.warn("[Admin/ApiConfig] Google ID save (tier-1) failed", e);
                 /* ignore */
               }
               await runAllTests(savedYtKey, savedVimeoKey, stKey);
@@ -2462,7 +2510,8 @@ function loadCustomProviders(): CustomProvider[] {
     return JSON.parse(
       localStorage.getItem(CUSTOM_PROVIDERS_KEY) ?? "[]",
     ) as CustomProvider[];
-  } catch {
+  } catch (e) {
+    console.warn("[Admin/Providers] loadCustomProviders: parse failed", e);
     return [];
   }
 }
@@ -2843,38 +2892,61 @@ function ProvidersTab({ isAr }: { isAr: boolean }) {
             setDmKeyLocked(true);
           }
         })
-        .catch(() => {});
+        .catch((e: unknown) => {
+          console.warn("[Admin/Providers] getDailymotionApiKey failed", e);
+        });
     }
   }, [actor]);
 
   const toggleProvider = async (id: string, val: boolean) => {
     setSaving(id);
     try {
-      const _token = localStorage.getItem("adminToken") || "";
       if (actor?.setProviderEnabled) await actor.setProviderEnabled(id, val);
       setProviderStates((prev) => ({ ...prev, [id]: val }));
-    } catch {
-      console.error("Toggle provider failed");
+      console.log(`[Admin/Providers] toggleProvider("${id}", ${val}) succeeded`);
+    } catch (e) {
+      console.error(`[Admin/Providers] toggleProvider("${id}", ${val}) failed`, e);
+      toast.error(
+        isAr
+          ? `فشل تبديل المزود: ${parseBackendError(e)}`
+          : `Failed to toggle provider: ${parseBackendError(e)}`,
+      );
+      // revert UI on failure
+      setProviderStates((prev) => ({ ...prev, [id]: !val }));
     } finally {
       setSaving(null);
     }
   };
 
   const saveDmKey = async () => {
+    if (!dmKey.trim()) {
+      toast.error(isAr ? "أدخل مفتاح API" : "Enter an API key");
+      return;
+    }
     setDmKeySaving(true);
     try {
-      const token = localStorage.getItem("adminToken") || "";
+      const token = localStorage.getItem("adminToken") || ADMIN_TOKEN;
       if (actor?.setDailymotionApiKeyByToken) {
-        const res = await actor.setDailymotionApiKeyByToken(dmKey, token);
+        const res = await actor.setDailymotionApiKeyByToken(dmKey.trim(), token);
         if ("ok" in res) {
           setDmKeyLocked(true);
           setDmKeyStatus("success");
+          toast.success(isAr ? "✓ تم حفظ مفتاح Dailymotion" : "✓ Dailymotion key saved");
         } else {
           setDmKeyStatus("error");
+          const errMsg = "err" in res ? String(res.err) : "Backend rejected key";
+          console.error("[Admin/Providers] saveDmKey: backend rejected", errMsg);
+          toast.error(parseBackendError(errMsg));
         }
+      } else {
+        console.error("[Admin/Providers] saveDmKey: setDailymotionApiKeyByToken not available on actor");
+        toast.error(isAr ? "الباكند لا يدعم حفظ مفتاح Dailymotion" : "Backend does not support saving Dailymotion key");
+        setDmKeyStatus("error");
       }
-    } catch (_e) {
+    } catch (e) {
+      console.error("[Admin/Providers] saveDmKey failed", e);
       setDmKeyStatus("error");
+      toast.error(parseBackendError(e));
     } finally {
       setDmKeySaving(false);
     }
@@ -3178,7 +3250,13 @@ function Admin() {
         setStats(s);
         setLoadingStats(false);
       })
-      .catch(() => {
+      .catch((e: unknown) => {
+        console.error("[Admin] getAdminStats failed", e);
+        toast.error(
+          isRTL
+            ? "تعذر تحميل الإحصائيات — تحقق من الاتصال بالخادم"
+            : "Failed to load stats — check server connection",
+        );
         setLoadingStats(false);
       });
 
@@ -3188,72 +3266,102 @@ function Admin() {
         setUsers(list);
         setLoadingUsers(false);
       })
-      .catch(() => {
+      .catch((e: unknown) => {
+        console.error("[Admin] listAllUsers failed", e);
+        toast.error(
+          isRTL
+            ? "تعذر تحميل قائمة المستخدمين"
+            : "Failed to load users list",
+        );
         setLoadingUsers(false);
       });
   }, [adminChecked, actor]);
 
   async function handleBan(userId: string) {
     if (!actor) return;
+    const user = users.find((u) => u.id.toText() === userId);
+    if (!user) {
+      console.error("[Admin] handleBan: user not found", userId);
+      toast.error(isRTL ? "المستخدم غير موجود" : "User not found");
+      return;
+    }
     try {
-      await actor.banUser(users.find((u) => u.id.toText() === userId)!.id);
+      await actor.banUser(user.id);
       setUsers((prev) =>
         prev.map((u) =>
           u.id.toText() === userId ? { ...u, isBanned: true } : u,
         ),
       );
       toast.success(isRTL ? "تم حظر المستخدم" : "User banned");
-    } catch {
-      toast.error(isRTL ? "فشل الحظر" : "Failed to ban user");
+    } catch (e) {
+      console.error("[Admin] banUser failed", userId, e);
+      toast.error(parseBackendError(e));
     }
   }
 
   async function handleUnban(userId: string) {
     if (!actor) return;
+    const user = users.find((u) => u.id.toText() === userId);
+    if (!user) {
+      console.error("[Admin] handleUnban: user not found", userId);
+      toast.error(isRTL ? "المستخدم غير موجود" : "User not found");
+      return;
+    }
     try {
-      await actor.unbanUser(users.find((u) => u.id.toText() === userId)!.id);
+      await actor.unbanUser(user.id);
       setUsers((prev) =>
         prev.map((u) =>
           u.id.toText() === userId ? { ...u, isBanned: false } : u,
         ),
       );
       toast.success(isRTL ? "تم إلغاء الحظر" : "User unbanned");
-    } catch {
-      toast.error(isRTL ? "فشل إلغاء الحظر" : "Failed to unban user");
+    } catch (e) {
+      console.error("[Admin] unbanUser failed", userId, e);
+      toast.error(parseBackendError(e));
     }
   }
 
   async function handlePromote(userId: string) {
     if (!actor) return;
+    const user = users.find((u) => u.id.toText() === userId);
+    if (!user) {
+      console.error("[Admin] handlePromote: user not found", userId);
+      toast.error(isRTL ? "المستخدم غير موجود" : "User not found");
+      return;
+    }
     try {
-      await actor.promoteToAdmin(
-        users.find((u) => u.id.toText() === userId)!.id,
-      );
+      await actor.promoteToAdmin(user.id);
       setUsers((prev) =>
         prev.map((u) =>
           u.id.toText() === userId ? { ...u, role: UserRole.admin } : u,
         ),
       );
       toast.success(isRTL ? "تمت الترقية إلى مسؤول" : "User promoted to admin");
-    } catch {
-      toast.error(isRTL ? "فشلت الترقية" : "Failed to promote user");
+    } catch (e) {
+      console.error("[Admin] promoteToAdmin failed", userId, e);
+      toast.error(parseBackendError(e));
     }
   }
 
   async function handleDemote(userId: string) {
     if (!actor) return;
+    const user = users.find((u) => u.id.toText() === userId);
+    if (!user) {
+      console.error("[Admin] handleDemote: user not found", userId);
+      toast.error(isRTL ? "المستخدم غير موجود" : "User not found");
+      return;
+    }
     try {
-      await actor.demoteFromAdmin(
-        users.find((u) => u.id.toText() === userId)!.id,
-      );
+      await actor.demoteFromAdmin(user.id);
       setUsers((prev) =>
         prev.map((u) =>
           u.id.toText() === userId ? { ...u, role: UserRole.user } : u,
         ),
       );
       toast.success(isRTL ? "تم إلغاء صلاحية المسؤول" : "User demoted");
-    } catch {
-      toast.error(isRTL ? "فشل إلغاء الصلاحية" : "Failed to demote user");
+    } catch (e) {
+      console.error("[Admin] demoteFromAdmin failed", userId, e);
+      toast.error(parseBackendError(e));
     }
   }
 

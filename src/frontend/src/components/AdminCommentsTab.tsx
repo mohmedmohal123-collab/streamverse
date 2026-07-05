@@ -21,6 +21,19 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+
+function parseBackendErrorSafe(e: unknown, isRTL: boolean): string {
+  const msg = String(e);
+  if (msg.includes("auth") || msg.includes("unauthorized"))
+    return isRTL
+      ? "خطأ في الصلاحيات — أعد تسجيل الدخول"
+      : "Auth error — please log in again";
+  if (msg.includes("network") || msg.includes("fetch"))
+    return isRTL
+      ? "خطأ في الاتصال بالخادم"
+      : "Connection error — check your internet";
+  return isRTL ? `فشل — ${msg.slice(0, 120)}` : `Failed — ${msg.slice(0, 120)}`;
+}
 import type { CommentView } from "../backend.d";
 import { useActor } from "../lib/backend";
 
@@ -50,8 +63,13 @@ export function AdminCommentsTab({ isRTL }: { isRTL: boolean }) {
       setComments(res.items);
       setTotal(res.total);
       setOffset(off);
-    } catch {
-      toast.error(isRTL ? "فشل تحميل التعليقات" : "Failed to load comments");
+    } catch (e) {
+      console.error("[Admin/Comments] load failed", e);
+      toast.error(
+        isRTL
+          ? "فشل تحميل التعليقات — تحقق من الاتصال بالخادم"
+          : "Failed to load comments — check server connection",
+      );
     } finally {
       setLoading(false);
     }
@@ -70,8 +88,9 @@ export function AdminCommentsTab({ isRTL }: { isRTL: boolean }) {
         prev.map((c) => (c.id === commentId ? { ...c, isDeleted: true } : c)),
       );
       toast.success(isRTL ? "تم حذف التعليق" : "Comment deleted");
-    } catch {
-      toast.error(isRTL ? "فشل حذف التعليق" : "Failed to delete comment");
+    } catch (e) {
+      console.error("[Admin/Comments] delete failed", commentId, e);
+      toast.error(parseBackendErrorSafe(e, isRTL));
     }
   }
 

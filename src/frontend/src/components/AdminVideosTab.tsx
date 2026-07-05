@@ -12,14 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  CheckCircle,
-  ChevronLeft,
-  ChevronRight,
-  Flag,
-  Trash2,
-  Video,
-} from "lucide-react";
+import { CircleCheck as CheckCircle, ChevronLeft, ChevronRight, Flag, Trash2, Video } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { VideoPostView } from "../backend.d";
@@ -79,8 +72,13 @@ export function AdminVideosTab({ isRTL }: { isRTL: boolean }) {
       setVideos(res.items);
       setTotal(res.total);
       setOffset(off);
-    } catch {
-      toast.error(isRTL ? "فشل تحميل الفيديوهات" : "Failed to load videos");
+    } catch (e) {
+      console.error("[Admin/Videos] load failed", e);
+      toast.error(
+        isRTL
+          ? "فشل تحميل الفيديوهات — تحقق من الاتصال بالخادم"
+          : "Failed to load videos — check server connection",
+      );
     } finally {
       setLoading(false);
     }
@@ -99,8 +97,13 @@ export function AdminVideosTab({ isRTL }: { isRTL: boolean }) {
         prev.map((v) => (v.id === postId ? { ...v, status } : v)),
       );
       toast.success(isRTL ? "تم تحديث حالة الفيديو" : "Video status updated");
-    } catch {
-      toast.error(isRTL ? "فشل تحديث الحالة" : "Failed to update status");
+    } catch (e) {
+      console.error("[Admin/Videos] moderate failed", postId, status, e);
+      toast.error(
+        isRTL
+          ? `فشل تحديث الحالة: ${String(e).slice(0, 80)}`
+          : `Failed to update status: ${String(e).slice(0, 80)}`,
+      );
     }
   }
 
