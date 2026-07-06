@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, CreditCard, Check, DollarSign } from "lucide-react";
+import { Loader as Loader2, CreditCard, Check, DollarSign } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {

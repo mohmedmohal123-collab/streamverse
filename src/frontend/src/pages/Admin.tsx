@@ -16,25 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  Activity,
-  BadgeDollarSign,
-  BarChart3,
-  CheckCircle2,
-  CreditCard,
-  Eye,
-  EyeOff,
-  Key,
-  Megaphone,
-  MessageSquare,
-  RefreshCw,
-  Settings,
-  Shield,
-  TrendingUp,
-  Users,
-  Video,
-  XCircle,
-} from "lucide-react";
+import { Activity, BadgeDollarSign, ChartBar as BarChart3, CircleCheck as CheckCircle2, CreditCard, Eye, EyeOff, Key, Megaphone, MessageSquare, RefreshCw, Settings, Shield, TrendingUp, Users, Video, Circle as XCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Bar,
