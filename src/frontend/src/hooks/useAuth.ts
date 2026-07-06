@@ -50,6 +50,39 @@ export function useAuth() {
     return localStorage.getItem("streamverse_credential_auth") === "true";
   });
 
+  // Restore session from JWT token on mount
+  useEffect(() => {
+    const token = localStorage.getItem("streamverse_jwt_token");
+    if (!token || !credentialAuth) return;
+
+    // Verify the token is still valid
+    fetch("/api/auth/verify-token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((result) => {
+        if (result?.__kind__ === "ok" && result.ok?.user) {
+          // Token is valid — restore admin status
+          if (result.ok.user.role === "admin") {
+            setIsAdmin(true);
+            localStorage.setItem(ADMIN_KEY, "true");
+            localStorage.setItem(ADMIN_USERNAME_KEY, result.ok.user.username);
+          }
+        } else {
+          // Token is invalid — log out
+          console.warn("[Auth] JWT token invalid or expired, logging out");
+          localStorage.removeItem("streamverse_jwt_token");
+          setCredentialAuthenticated(false);
+          setIsAdmin(false);
+        }
+      })
+      .catch((e) => {
+        console.warn("[Auth] Token verify failed (network?), keeping session:", e);
+      });
+  }, []); // Only run once on mount
+
   // Internet Identity state
   const [iiAuth, setIiAuth] = useState<boolean>(() => {
     return localStorage.getItem(II_AUTH_KEY) === "true";
@@ -119,6 +152,7 @@ export function useAuth() {
     } else {
       localStorage.removeItem("streamverse_credential_auth");
       localStorage.removeItem("streamverse_authenticated");
+      localStorage.removeItem("streamverse_jwt_token");
       localStorage.removeItem(AUTH_SESSION_KEY);
       localStorage.removeItem(ADMIN_KEY);
       localStorage.removeItem(ADMIN_USERNAME_KEY);
@@ -224,6 +258,8 @@ export function useAuth() {
 
   const logout = () => {
     setCredentialAuthenticated(false);
+    // Clear JWT token
+    localStorage.removeItem("streamverse_jwt_token");
     // Also clear II session
     localStorage.removeItem(II_AUTH_KEY);
     localStorage.removeItem(II_PRINCIPAL_KEY);
