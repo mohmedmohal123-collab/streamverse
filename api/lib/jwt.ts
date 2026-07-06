@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
+import type * as jwtType from 'jsonwebtoken';
 import type { UserId, JwtPayload } from '../types/auth.js';
 
-const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
+const jwtSecret = process.env.JWT_SECRET || 'streamverse-dev-jwt-secret-do-not-use-in-production-0x7f';
 const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
 
 /**
