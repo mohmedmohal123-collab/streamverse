@@ -1342,9 +1342,30 @@ function ApiConfigTab({
         }
       }
 
-      if (!saved) throw lastError ?? new Error("All save methods failed");
+      // Tier-4: REST API fallback (Vercel serverless + Supabase)
+      if (!saved) {
+        try {
+          const res = await fetch("/api/admin/settings", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("streamverse_jwt_token") ?? ""}`,
+            },
+            body: JSON.stringify({ key: "youtube_api_key", value: apiKey.trim() }),
+          });
+          if (res.ok) {
+            saved = true;
+            console.info("[Admin] YouTube key saved via REST API (tier-4)");
+          } else {
+            lastError = new Error(`REST API save failed: ${res.status}`);
+          }
+        } catch (e) {
+          console.warn("[Admin] YouTube save tier-4 (REST API) failed", e);
+          lastError = e;
+        }
+      }
 
-      setYouTubeApiKey(apiKey.trim());
+      if (!saved) throw lastError ?? new Error("All save methods failed");
       setSavedYtKey(apiKey.trim());
       setYtLocked(true);
       setKeyStatus("configured");

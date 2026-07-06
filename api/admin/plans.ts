@@ -62,7 +62,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // POST — create or update a plan
     if (req.method === 'POST') {
-      const { id, name, description, monthlyPrice, annualPrice, currency, isActive, features, sortOrder } = req.body;
+      const body = req.body;
+      const id = body.id;
+      const name = body.name;
+      const description = body.description;
+      const monthlyPrice = body.monthlyPrice ?? body.monthly_price;
+      const annualPrice = body.annualPrice ?? body.annual_price;
+      const currency = body.currency;
+      const isActive = body.isActive ?? body.is_active;
+      const features = body.features;
+      const sortOrder = body.sortOrder ?? body.sort_order;
 
       if (!id || !VALID_TIERS.has(id)) {
         return res.status(400).json({ error: 'Invalid or missing plan id' });

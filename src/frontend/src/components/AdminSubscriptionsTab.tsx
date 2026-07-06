@@ -94,12 +94,12 @@ export function AdminSubscriptionsTab({ isRTL }: { isRTL: boolean }) {
         id: planId,
         name: formData.name,
         description: formData.description,
-        monthlyPrice: formData.monthlyPrice,
-        annualPrice: formData.annualPrice,
+        monthly_price: Number(formData.monthlyPrice) || 0,
+        annual_price: Number(formData.annualPrice) || 0,
         currency: formData.currency,
-        isActive: formData.isActive,
+        is_active: formData.isActive,
         features,
-        sortOrder: plans.find((p) => p.id === planId)?.sort_order ?? 0,
+        sort_order: plans.find((p) => p.id === planId)?.sort_order ?? 0,
       });
 
       toast.success(
