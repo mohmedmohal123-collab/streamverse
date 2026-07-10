@@ -1,6 +1,7 @@
 {
   "buildCommand": "pnpm build",
   "rewrites": [
+    { "source": "/api/:path+", "destination": "/api/[...route]" },
     { "source": "/((?!api).*)", "destination": "/index.html" }
   ],
   "headers": [

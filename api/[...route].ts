@@ -517,15 +517,21 @@ async function publicAds(req: VercelRequest, res: VercelResponse): Promise<Verce
 // ─── Route extraction ─────────────────────────────────────────────────────────
 
 function resolvePath(req: VercelRequest): { path: string; segments: string[] } {
-  // Strategy 1: req.query.route populated by Vercel catch-all file pattern
-  const routeParam = req.query.route;
-  if (routeParam && (Array.isArray(routeParam) ? routeParam.length > 0 : routeParam !== '')) {
-    const parts = Array.isArray(routeParam) ? routeParam : [routeParam];
+  // Strategy 1: req.query populated by Vercel's auto-generated route.
+  // For api/[...route].ts, Vercel sets req.query['...route'] (key is literal "...route").
+  // It may also set req.query.route for single-segment matches in some versions.
+  const catchAllParam = (req.query as Record<string, string | string[]>)['...route'] ?? req.query.route;
+  if (catchAllParam && (Array.isArray(catchAllParam) ? catchAllParam.length > 0 : catchAllParam !== '')) {
+    // Vercel may deliver the value as a slash-joined string "settings/public" or as an array ["settings","public"]
+    const raw = Array.isArray(catchAllParam) ? catchAllParam.join('/') : catchAllParam;
+    const parts = raw.split('/').filter(Boolean);
     const path = '/' + parts.join('/');
     return { path, segments: parts };
   }
 
-  // Strategy 2: parse req.url — used when request is rewritten by vercel.json
+  // Strategy 2: parse req.url — fallback for rewrites that do not populate query params.
+  // Vercel preserves the original request URL in req.url even after rewriting, so
+  // /api/settings/public stays as "/api/settings/public" (with optional QS appended).
   const rawUrl = req.url || '/';
   // Strip query string
   const withoutQs = rawUrl.split('?')[0];
