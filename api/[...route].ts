@@ -514,6 +514,31 @@ async function publicAds(req: VercelRequest, res: VercelResponse): Promise<Verce
   }
 }
 
+// ─── Route extraction ─────────────────────────────────────────────────────────
+
+function resolvePath(req: VercelRequest): { path: string; segments: string[] } {
+  // Strategy 1: req.query.route populated by Vercel catch-all file pattern
+  const routeParam = req.query.route;
+  if (routeParam && (Array.isArray(routeParam) ? routeParam.length > 0 : routeParam !== '')) {
+    const parts = Array.isArray(routeParam) ? routeParam : [routeParam];
+    const path = '/' + parts.join('/');
+    return { path, segments: parts };
+  }
+
+  // Strategy 2: parse req.url — used when request is rewritten by vercel.json
+  const rawUrl = req.url || '/';
+  // Strip query string
+  const withoutQs = rawUrl.split('?')[0];
+  // Normalize duplicate slashes
+  const normalized = withoutQs.replace(/\/+/g, '/');
+  // Strip leading /api prefix (with or without trailing slash)
+  const withoutApi = normalized.replace(/^\/api(\/|$)/, '/');
+  // Ensure leading slash, no trailing slash (except root)
+  const path = ('/' + withoutApi.replace(/^\/+/, '').replace(/\/+$/, '')).replace(/\/+/g, '/') || '/';
+  const segments = path.split('/').filter(Boolean);
+  return { path, segments };
+}
+
 // ─── Router ───────────────────────────────────────────────────────────────────
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -523,10 +548,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
-  // Vercel catch-all: req.query.route is an array of path segments
-  const route = req.query.route as string[] | undefined;
-  const segments = route || [];
-  const path = '/' + segments.join('/');
+  const { path, segments } = resolvePath(req);
+
+  console.log('req.url =', req.url);
+  console.log('req.query =', JSON.stringify(req.query));
+  console.log('resolved path =', path);
 
   try {
     // /api/auth/login/credentials
@@ -582,6 +608,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // /api/ads/public
     if (path === '/ads/public') {
       return await publicAds(req, res);
+    }
+
+    // /api/test — debug: shows exactly what the router parsed
+    if (path === '/test') {
+      return sendJson(res, 200, { route: path, url: req.url, query: req.query });
     }
 
     return sendError(res, 404, `Not found: ${path}`);
